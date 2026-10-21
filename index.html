@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Investment Stats · Y. Capital</title>
-<!-- Version 1.1.0 (2026-10-21) — see the changelog next to APP_VERSION in the script -->
+<!-- Version 1.2.0 (2026-10-21) — see the changelog next to APP_VERSION in the script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
@@ -104,6 +104,7 @@
   .console-status span { display: inline-flex; align-items: center; gap: 6px; }
 
   .wrap { max-width: 960px; margin: 0 auto; padding: 40px 16px 56px; position: relative; z-index: 2; }
+
 
   .eyebrow { color: var(--gold); letter-spacing: 0.28em; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
   h1 {
@@ -251,11 +252,6 @@
   .portfolio-summary-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
   .ps-lbl { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
   .ps-val { font-family: 'Consolas', 'Menlo', monospace; font-size: 20px; font-weight: 700; letter-spacing: 0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  @media (max-width: 480px) {
-    .portfolio-summary-grid { grid-template-columns: 1fr; }
-    .portfolio-summary-cell + .portfolio-summary-cell { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.07); }
-    .portfolio-summary-grid.cols-4 { grid-template-columns: 1fr; }
-  }
   .chart-frame {
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.22);
@@ -435,6 +431,39 @@
   .sync-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
   .hidden { display: none !important; }
+
+  /* ---- Phone fit: everything scales to the screen width, no sideways page scroll ---- */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { overflow-x: hidden; }
+  img, svg, canvas { max-width: 100%; }
+  @media (max-width: 640px) {
+    .wrap { padding: 20px max(12px, env(safe-area-inset-right)) 40px max(12px, env(safe-area-inset-left)); }
+    h1 { font-size: 26px; }
+    .card { padding-left: 14px; padding-right: 14px; }
+    /* 16px inputs: iOS Safari zooms the whole page when a smaller field is focused, which breaks "fit to screen" */
+    input[type="text"], input[type="number"], input[type="date"], input.field, select.field, textarea { font-size: 16px; }
+    /* Card gallery: first card centred, swipe sideways */
+    .card-gallery-row { padding: 28px 10vw 40px 10vw; gap: 12px; scroll-snap-type: x mandatory; }
+    .card-gallery-item { scroll-snap-align: center; }
+    .card-gallery-item.selected { margin: 0 8px; }
+    /* Portfolio Summary: two columns instead of one long stack */
+    .portfolio-summary-grid, .portfolio-summary-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+    .portfolio-summary-grid .portfolio-summary-cell { border-left: none; border-top: none; padding: 12px 8px; }
+    .portfolio-summary-grid .portfolio-summary-cell:nth-child(2n) { border-left: 1px solid rgba(255, 255, 255, 0.07); }
+    .portfolio-summary-grid .portfolio-summary-cell:nth-child(n+3) { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+    .ps-val { font-size: 17px; }
+    .ps-lbl { font-size: 10px; }
+    .header-row { flex-wrap: wrap; gap: 8px; }
+    .sync-actions { flex-wrap: wrap; }
+    .sync-actions > button { flex: 1 1 140px; }
+    .inv-hud-box { flex-wrap: wrap; }
+    .card, .card * { overflow-wrap: anywhere; }
+    .card button, .card .icon-btn { overflow-wrap: normal; }
+  }
+  @media (max-width: 360px) {
+    .ps-val { font-size: 15px; }
+    h1 { font-size: 22px; }
+  }
 </style>
 </head>
 <body>
@@ -947,11 +976,12 @@
   var LS_PREFIX = 'investmentStats_';
 
   // ---- Version: bump on EVERY update and add a line to the changelog ----
+  // 1.2.0  2026-10-21  Phone layout: auto-fit to screen (2-column summary, 16px inputs to stop iOS zoom, centred card gallery, tighter padding).
   // 1.1.0  2026-10-21  Cloud Sync: on a device with no data, only "Restore from Cloud" is shown (no Sync to Cloud).
   // 1.0.0  2026-10-21  Baseline: bug fixes, Portfolio Summary first, Bank Transfer Records (net of fees),
   //                    summary cards (Principal / Total Invested / Cash Flow / % of YTD Return / Total Fee),
   //                    section reorder, Y. Capital branding, passcode lock.
-  var APP_VERSION = '1.1.0';
+  var APP_VERSION = '1.2.0';
   var APP_VERSION_DATE = '2026-10-21';
 
   function loadAll() {
