@@ -2458,6 +2458,7 @@
     html += '<div class="console-status">';
     html += '<span><span class="led-dot" style="color:#4ADE80"></span>SYSTEM ONLINE</span>';
     html += '<span><span class="led-dot" style="color:' + (connectedGlobal ? '#4ADE80' : '#8B93AD') + '"></span>LINK: ' + (connectedGlobal ? 'CLOUD SYNCED' : 'LOCAL ONLY') + '</span>';
+    html += '<span><button class="btn-ghost" id="btnLockApp" style="padding:2px 10px;font-size:11px">&#128274; Lock</button></span>';
     html += '</div>';
     html += '</div>';
     html += '</div>';
@@ -3461,6 +3462,9 @@
       };
     });
 
+    var lockBtn = document.getElementById('btnLockApp');
+    if (lockBtn) lockBtn.onclick = lockApp;
+
     var importFileInput = document.getElementById('importFileInput');
     importFileInput.onchange = function (e) {
       var file = e.target.files && e.target.files[0];
@@ -3469,7 +3473,72 @@
     };
   }
 
-  loadAll();
+  // ---------- Passcode lock ----------
+  // A screen lock: the page asks for a passcode on every new visit (a refresh in the same tab stays unlocked).
+  // This keeps casual visitors out; it is not bank-grade security, because the check runs inside the page itself.
+  var UNLOCK_KEY = LS_PREFIX + 'unlocked';
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function ssGet(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+  function ssSet(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+
+  function hashPass(pass, salt) {
+    var text = salt + '|' + pass;
+    if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+      return window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) {
+        return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+      });
+    }
+    // Fallback for very old browsers / insecure contexts: cyrb53 string hash
+    var h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return Promise.resolve('f' + (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16));
+  }
+
+  // Fixed passcode for every device. Only salted hashes are in the file (SHA-256, plus a fallback hash for very old browsers).
+  var PASS_SALT = 'ycap-v1';
+  var PASS_OK = { sha: 'ffe6c46e78db1f147dac0212dc9fe7756b0d8de68c15ce4f208567175544c19c', legacy: 'f9df4a462f6bd4' };
+
+  function showPassGate(onUnlock) {
+    var gate = document.createElement('div');
+    gate.id = 'passGate';
+    gate.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--navy-bg,#081410);';
+    gate.innerHTML =
+      '<form id="passForm" autocomplete="off" style="width:100%;max-width:340px;text-align:center;font-family:Consolas,Menlo,monospace">' +
+      '<div style="font-size:11px;letter-spacing:2px;color:#8B93AD">&gt; Y. CAPITAL // NAV-COMPUTER</div>' +
+      '<h1 style="margin:10px 0 6px;font-size:22px;color:var(--text,#E8ECF4)">Enter Passcode</h1>' +
+      '<div style="font-size:12px;color:#8B93AD;margin-bottom:16px">This page is locked.</div>' +
+      '<input type="password" id="passInput" class="field" placeholder="Passcode" inputmode="numeric" autocomplete="off" style="width:100%;text-align:center;box-sizing:border-box" />' +
+      '<div id="passErr" style="min-height:18px;margin:8px 0;font-size:12px;color:#F87171"></div>' +
+      '<button type="submit" class="btn-gold" style="width:100%">Unlock</button>' +
+      '</form>';
+    document.body.appendChild(gate);
+    var input = document.getElementById('passInput');
+    var err = document.getElementById('passErr');
+    setTimeout(function () { try { input.focus(); } catch (e) {} }, 30);
+    document.getElementById('passForm').onsubmit = function (ev) {
+      ev.preventDefault();
+      hashPass(String(input.value).trim(), PASS_SALT).then(function (h) {
+        if (h === PASS_OK.sha || h === PASS_OK.legacy) { ssSet(UNLOCK_KEY, '1'); gate.remove(); onUnlock(); }
+        else { err.textContent = 'Wrong passcode.'; input.value = ''; input.focus(); }
+      });
+    };
+  }
+
+  function lockApp() {
+    try { sessionStorage.removeItem(UNLOCK_KEY); } catch (e) {}
+    location.reload();
+  }
+
+  // Stays unlocked across refreshes in the same tab; a new tab / closed browser asks again.
+  if (ssGet(UNLOCK_KEY) === '1') loadAll();
+  else showPassGate(loadAll);
 })();
 </script>
 </body>
