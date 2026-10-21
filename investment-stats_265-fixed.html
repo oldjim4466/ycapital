@@ -1,0 +1,3476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Investment Stats · Y. Capital</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=Orbitron:wght@500;700;800&display=swap');
+
+  :root {
+    --navy-bg: #081410;
+    --navy-card: #0F2A1E;
+    --navy-inner: #0B2018;
+    --navy-line: #234438;
+    --gold: #C9A227;
+    --gold-light: #E8C468;
+    --text: #EDEAE0;
+    --text-muted: #8B93AD;
+    --green: #4ADE80;
+    --red: #F87171;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background:
+      repeating-linear-gradient(0deg, rgba(201, 162, 39, 0.035) 0px, rgba(201, 162, 39, 0.035) 1px, transparent 1px, transparent 48px),
+      repeating-linear-gradient(90deg, rgba(201, 162, 39, 0.035) 0px, rgba(201, 162, 39, 0.035) 1px, transparent 1px, transparent 48px),
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(201, 162, 39, 0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 0%, rgba(74, 222, 128, 0.05), transparent 55%),
+      var(--navy-bg);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 0%, rgba(74, 222, 128, 0.07), transparent 70%),
+      radial-gradient(ellipse 55% 40% at 12% 100%, rgba(201, 162, 39, 0.05), transparent 65%),
+      radial-gradient(ellipse 100% 60% at 50% 100%, rgba(0, 0, 0, 0.6), transparent 60%),
+      radial-gradient(ellipse 140% 140% at 50% 50%, transparent 50%, rgba(0, 0, 0, 0.4) 100%);
+  }
+  @keyframes ambient-breathe {
+    0%, 100% { opacity: 0.85; }
+    50% { opacity: 1; }
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-light) 50%, var(--gold) 70%, transparent);
+    opacity: 0.8;
+    z-index: 10;
+  }
+  @keyframes accent-shimmer {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+  }
+
+  .img-shine-sweep {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 47%, rgba(255,255,255,0.85) 50%, rgba(255,255,255,0.55) 53%, transparent 70%);
+    background-size: 250% 250%;
+    background-position: -100% -100%;
+    mix-blend-mode: overlay;
+    animation: img-shine-move 30s ease-in-out infinite;
+  }
+  @keyframes img-shine-move {
+    0% { background-position: -60% -60%; }
+    50% { background-position: 160% 160%; }
+    100% { background-position: -60% -60%; }
+  }
+
+  @keyframes led-blink {
+    0%, 100% { opacity: 1; box-shadow: 0 0 6px currentColor; }
+    50% { opacity: 0.35; box-shadow: 0 0 2px currentColor; }
+  }
+  .led-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: led-blink 1.8s ease-in-out infinite; }
+
+  @keyframes earnings-flash {
+    0%, 100% { opacity: 1; text-shadow: 0 0 6px currentColor, 0 0 14px currentColor; }
+    50% { opacity: 0.45; text-shadow: 0 0 2px currentColor; }
+  }
+  .earnings-today { animation: earnings-flash 0.9s ease-in-out infinite; }
+
+  .console-status { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; color: var(--text-muted); font-family: 'Consolas', 'Menlo', monospace; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 12px; }
+  .console-status span { display: inline-flex; align-items: center; gap: 6px; }
+
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 16px 56px; position: relative; z-index: 2; }
+
+  .eyebrow { color: var(--gold); letter-spacing: 0.28em; font-size: 11px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  h1 {
+    font-family: 'Noto Serif TC', serif;
+    background: linear-gradient(135deg, var(--text) 20%, var(--gold-light) 50%, var(--green) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.015em;
+    filter: drop-shadow(0 0 14px rgba(201, 162, 39, 0.35));
+  }
+  .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 6px; }
+
+  header { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--navy-line); }
+  .header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .header-actions { display: flex; gap: 8px; }
+
+  .card {
+    position: relative;
+    background: linear-gradient(165deg, rgba(15, 42, 30, 0.97), rgba(11, 32, 24, 0.97));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--navy-line);
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+    padding: 22px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 -14px 22px -18px rgba(0, 0, 0, 0.6) inset,
+      0 2px 6px rgba(0, 0, 0, 0.35),
+      0 14px 30px -10px rgba(0, 0, 0, 0.55),
+      0 28px 54px -24px rgba(0, 0, 0, 0.5);
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    transform-style: preserve-3d;
+    perspective: 800px;
+  }
+  .card::before, .card::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .card::before { top: -1px; right: -1px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+  .card::after { bottom: -1px; left: -1px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+  .card:hover {
+    border-color: rgba(74, 222, 128, 0.4);
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 -14px 22px -18px rgba(0, 0, 0, 0.6) inset,
+      0 4px 12px rgba(74, 222, 128, 0.15),
+      0 18px 34px -12px rgba(0, 0, 0, 0.6),
+      0 34px 60px -22px rgba(0, 0, 0, 0.55),
+      0 46px 80px -30px rgba(0, 0, 0, 0.5);
+  }
+  .card-editing { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.12), 0 8px 20px -12px rgba(0, 0, 0, 0.5); }
+  .stat-card-3d { width: 280px; flex-shrink: 0; transition: transform 0.3s ease, box-shadow 0.3s ease; transform-style: preserve-3d; }
+  .stat-card-3d:hover { transform: translateY(-3px); }
+  .card-gallery-item.selected { z-index: 2; position: relative; margin: 0 24px; transition: margin 0.3s ease; }
+  .card-gallery-item.selected .stat-card-3d { transform: translateY(-4px); }
+  .card-gallery-item.selected .stat-card-3d:hover { transform: translateY(-6px); }
+  @media (max-width: 640px) {
+    .stat-card-3d { width: 80vw; max-width: 340px; }
+  }
+  .card-gallery-row {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 40px 60px 50px 100px;
+    margin-bottom: 20px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+  }
+  .card-gallery-row::-webkit-scrollbar { height: 8px; }
+  .card-gallery-row::-webkit-scrollbar-thumb { background: rgba(74, 222, 128, 0.3); border-radius: 4px; }
+  .card-gallery-item { flex-shrink: 0; scroll-snap-align: start; cursor: pointer; }
+  @keyframes gold-select-pulse {
+    0%, 100% { filter: brightness(1) saturate(1); }
+    50% { filter: brightness(1.35) saturate(1.4); }
+  }
+  .card-gallery-item.selected .stat-card-border {
+    animation: gold-select-pulse 1.6s ease-in-out infinite;
+  }
+  .stat-card-border {
+    position: relative;
+    border-radius: 16px;
+    padding: 4px;
+    overflow: hidden;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  }
+  .stat-card-border::before, .stat-card-border::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.9;
+  }
+  .stat-card-border::before { top: 0; right: 0; border-top: 2px solid rgba(255, 255, 255, 0.6); border-right: 2px solid rgba(255, 255, 255, 0.6); }
+  .stat-card-border::after { bottom: 0; left: 0; border-bottom: 2px solid rgba(255, 255, 255, 0.6); border-left: 2px solid rgba(255, 255, 255, 0.6); }
+  .stat-card-inner { position: relative; overflow: hidden; }
+  .stat-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .stat-bar-track { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden; position: relative; }
+  .stat-ring-glow {
+    position: absolute;
+    top: -30%;
+    left: -30%;
+    width: 160%;
+    height: 160%;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .stat-bar-fill { height: 100%; border-radius: 4px; position: relative; overflow: hidden; }
+  .portfolio-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow:
+      inset 0 3px 10px rgba(0, 0, 0, 0.55),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 0 0 1px rgba(74, 222, 128, 0.10);
+    overflow: hidden;
+  }
+  .portfolio-summary-cell {
+    padding: 16px 12px;
+    text-align: center;
+    min-width: 0;
+  }
+  .portfolio-summary-cell + .portfolio-summary-cell { border-left: 1px solid rgba(255, 255, 255, 0.07); }
+  .portfolio-summary-grid + .portfolio-summary-grid { margin-top: 8px; }
+  .portfolio-summary-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .ps-lbl { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .ps-val { font-family: 'Consolas', 'Menlo', monospace; font-size: 20px; font-weight: 700; letter-spacing: 0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 480px) {
+    .portfolio-summary-grid { grid-template-columns: 1fr; }
+    .portfolio-summary-cell + .portfolio-summary-cell { border-left: none; border-top: 1px solid rgba(255, 255, 255, 0.07); }
+    .portfolio-summary-grid.cols-4 { grid-template-columns: 1fr; }
+  }
+  .chart-frame {
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow:
+      inset 0 3px 10px rgba(0, 0, 0, 0.55),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 0 0 1px rgba(74, 222, 128, 0.10);
+  }
+
+  .chart-card-glow {
+    position: relative;
+    background:
+      radial-gradient(ellipse 420px 220px at 15% 0%, rgba(30, 58, 138, 0.22), transparent 65%),
+      radial-gradient(ellipse 420px 220px at 85% 100%, rgba(74, 222, 128, 0.14), transparent 65%),
+      radial-gradient(ellipse 300px 200px at 100% 0%, rgba(201, 162, 39, 0.16), transparent 60%),
+      linear-gradient(165deg, var(--navy-card), var(--navy-inner));
+    border-color: rgba(74, 222, 128, 0.25);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.4) inset,
+      0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+      0 0 34px -8px rgba(30, 58, 138, 0.4),
+      0 14px 20px -10px rgba(0, 0, 0, 0.5),
+      0 30px 46px -18px rgba(0, 0, 0, 0.65);
+  }
+  .card + .card { margin-top: 16px; }
+  .mb-6 { margin-bottom: 24px; }
+  .mb-8 { margin-bottom: 32px; }
+
+
+  .stat-sub { color: var(--text-muted); font-size: 12px; margin-top: 6px; line-height: 1.4; min-height: 2.8em; }
+
+  .section-title { color: var(--gold); font-size: 12px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.12em; font-family: 'Consolas', 'Menlo', monospace; }
+  .section-title::before { content: ''; width: 3px; height: 14px; background: var(--gold); display: inline-block; clip-path: polygon(0 0, 100% 20%, 100% 100%, 0 80%); }
+
+  input[type="text"], input[type="number"], input.field, select.field {
+    background: var(--navy-bg);
+    border: 1px solid var(--navy-line);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 8px 11px;
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) inset;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%234ADE80' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 11px center;
+  }
+  input[type="text"], input[type="number"], input.field { background-image: none; }
+  select.field { padding-right: 30px; cursor: pointer; }
+  select.field option { background: var(--navy-bg); color: var(--text); }
+  input::placeholder { color: var(--text-muted); }
+  input:focus, select.field:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.18); }
+
+  button { font-family: inherit; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease; }
+  button:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 2px; }
+  button:disabled { opacity: 0.5; cursor: default; }
+
+  .btn-gold { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: var(--navy-bg); border: none; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); padding: 8px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 4px 10px -4px rgba(0,0,0,0.5), 0 8px 20px -8px rgba(201, 162, 39, 0.55); font-family: 'Consolas', 'Menlo', monospace; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 14px -4px rgba(0,0,0,0.55), 0 12px 26px -8px rgba(201, 162, 39, 0.65); }
+  .btn-ghost { background: var(--navy-card); border: 1px solid var(--navy-line); color: var(--text); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); padding: 7px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-family: 'Consolas', 'Menlo', monospace; }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--gold); color: var(--gold-light); }
+  .btn-ghost-gold { background: var(--navy-inner); border: 1px solid var(--gold); color: var(--gold-light); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); padding: 7px 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-family: 'Consolas', 'Menlo', monospace; }
+  .btn-ghost-gold:hover:not(:disabled) { background: rgba(201, 162, 39, 0.12); }
+  .icon-btn { background: none; border: none; padding: 4px; display: inline-flex; border-radius: 6px; }
+  .icon-btn:hover { background: var(--navy-line); transform: translateY(-1px); }
+
+  .type-toggle { display: flex; gap: 6px; margin-bottom: 12px; background: var(--navy-inner); border: 1px solid var(--navy-line); padding: 4px; width: fit-content; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+  .type-toggle button { padding: 5px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border: none; background: transparent; color: var(--text-muted); font-family: 'Consolas', 'Menlo', monospace; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
+  .type-toggle button.active { background: var(--gold); color: var(--navy-bg); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  @media (min-width: 640px) { .form-grid { grid-template-columns: repeat(3, 1fr); } }
+  .field-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-light); font-weight: 600; }
+  .form-grid .span-3-1 { grid-column: span 1; }
+  @media (min-width: 640px) { .form-grid .span-3-1 { grid-column: span 3; } }
+  @media (min-width: 768px) { .form-grid .span-3-1 { grid-column: span 1; } }
+  .price-row { display: flex; gap: 4px; }
+  .price-row input { flex: 1; min-width: 0; }
+
+  .hint { color: var(--text-muted); font-size: 12px; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+  .chart-tooltip-box { margin-top: 12px; padding: 9px 14px; border: 1px solid var(--navy-line); border-radius: 8px; background: var(--navy-inner); font-size: 12px; color: var(--text-muted); min-height: 20px; transition: border-color 0.15s ease, color 0.15s ease; }
+  .chart-legend { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+  .chart-legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-muted); }
+  .chart-legend-dot { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .chart-y-labels { position: absolute; top: 0; left: 0; height: 100%; width: 92px; pointer-events: none; }
+  .chart-y-badge {
+    position: absolute;
+    right: 12px;
+    transform: translateY(-50%);
+    max-width: 76px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(74, 222, 128, 0.10);
+    border: 1px solid #4ADE80;
+    color: #4ADE80;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'Consolas', 'Menlo', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.45);
+    text-shadow: 0 0 4px rgba(74, 222, 128, 0.6);
+  }
+  .chart-tooltip-box.active { color: var(--text); border-color: var(--gold); }
+  .error-text { color: var(--red); font-size: 12px; margin-top: 8px; }
+  .ok-text { color: var(--green); font-size: 12px; margin-top: 8px; }
+
+  .inv-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .inv-name { font-size: 18px; font-weight: 600; letter-spacing: 0.01em; }
+  .inv-start-date { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 11px; font-weight: 400; font-family: 'Consolas', 'Menlo', monospace; text-transform: none; margin-left: 10px; vertical-align: middle; }
+  .inv-hud-wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .inv-hud-box {
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow:
+      inset 0 3px 10px rgba(0, 0, 0, 0.55),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+      inset 0 0 0 1px rgba(74, 222, 128, 0.10);
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .inv-hud-cell { padding: 7px 14px; min-width: 84px; flex: 1 0 auto; border-right: 1px solid rgba(255, 255, 255, 0.06); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+  .inv-hud-cell:nth-child(even) { background: rgba(74, 222, 128, 0.055); }
+  .inv-hud-cell:nth-child(odd) { background: rgba(0, 0, 0, 0.12); }
+  .inv-hud-lbl, .inv-hud-val { white-space: nowrap; }
+  .inv-hud-lbl { color: var(--text-muted); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding-bottom: 3px; }
+  .inv-hud-val { padding-top: 3px; }
+  .inv-hud-val .val { font-family: 'Consolas', 'Menlo', monospace; font-size: 16px; font-weight: 700; letter-spacing: 0.01em; }
+  .inv-hud-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .hud-updated-note { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 11px; white-space: nowrap; }
+
+  .profit-box { background: linear-gradient(165deg, var(--navy-inner), var(--navy-bg)); border: 1px solid var(--navy-line); border-radius: 8px; padding: 12px; margin-top: 12px; }
+  .profit-toggle { width: 100%; background: none; border: none; color: inherit; display: flex; align-items: center; justify-content: space-between; padding: 6px; margin: -6px; border-radius: 6px; transition: background 0.15s ease; }
+  .profit-toggle:hover { background: rgba(201, 162, 39, 0.08); }
+  .profit-toggle-label { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; }
+  .profit-toggle-value { display: flex; align-items: center; gap: 8px; }
+
+  .profit-entry { display: flex; align-items: center; justify-content: between; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--navy-line); font-size: 15px; }
+  .profit-entry:last-child { border-bottom: none; }
+  .profit-entry-editing { background: rgba(201, 162, 39, 0.08); border: 1px solid var(--gold); border-radius: 6px; border-bottom: 1px solid var(--gold) !important; }
+  .profit-entry-name { color: var(--text); }
+  .profit-entry-date { color: var(--text-muted); font-size: 12px; }
+  .profit-entry-right { display: flex; align-items: center; gap: 10px; }
+
+  .empty-note { color: var(--text-muted); font-size: 13px; }
+  .center-empty { text-align: center; padding: 32px 0; }
+  .center-empty .empty-icon { opacity: 0.35; margin-bottom: 10px; }
+
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--navy-line); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+  .spin { animation: spin 1s linear infinite; }
+  .pulse { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .sync-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .sync-desc { color: var(--text-muted); font-size: 12px; margin-bottom: 14px; }
+  .pill { font-size: 11px; padding: 3px 10px 3px 8px; border-radius: 999px; font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+  .pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+  .pill-on { background: rgba(74, 222, 128, 0.14); color: var(--green); border: 1px solid rgba(74, 222, 128, 0.3); }
+  .pill-off { background: rgba(139, 147, 173, 0.12); color: var(--text-muted); border: 1px solid var(--navy-line); }
+  .sync-input-row { margin-bottom: 10px; }
+  .sync-input-row input { font-family: 'Consolas', 'Menlo', monospace; letter-spacing: 0.02em; font-size: 13px; }
+  .sync-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <div class="wrap" id="app"></div>
+  <input type="file" id="importFileInput" accept="application/json" class="hidden" />
+  <input type="file" id="customImageFileInput" accept="image/*" class="hidden" />
+
+<script>
+(function () {
+  // ---------- Icons ----------
+  // Original mascot generator ("investment spirit") — deterministic per item name, no copyrighted characters/branding.
+  function seedHash(str) {
+    var h = 0;
+    str = String(str || '');
+    for (var i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) | 0; }
+    return Math.abs(h);
+  }
+
+  // Maps a stock ticker to a broad industry category so the card can show a relevant themed icon.
+  function detectCategory(name) {
+    var t = String(name || '').trim().toUpperCase();
+    var map = {
+      // Chips / AI hardware
+      NVDA: 'chip', AMD: 'chip', INTC: 'chip', TSM: 'chip', AVGO: 'chip', QCOM: 'chip', MU: 'chip', ARM: 'chip', ASML: 'chip', SMCI: 'chip',
+      // Automotive
+      F: 'car', GM: 'car', TSLA: 'car', RIVN: 'car', TM: 'car', STLA: 'car', LCID: 'car', HMC: 'car',
+      // Software / enterprise tech
+      PLTR: 'software', MSFT: 'software', ORCL: 'software', CRM: 'software', NOW: 'software', ADBE: 'software', SNOW: 'software', WDAY: 'software', SAP: 'software',
+      // Consumer tech / devices
+      AAPL: 'tech', GOOGL: 'tech', GOOG: 'tech', META: 'tech', SONY: 'tech',
+      // Retail / ecommerce
+      AMZN: 'retail', WMT: 'retail', COST: 'retail', TGT: 'retail', BABA: 'retail', SHOP: 'retail',
+      // Finance / banking
+      JPM: 'finance', BAC: 'finance', GS: 'finance', MS: 'finance', WFC: 'finance', V: 'finance', MA: 'finance', AXP: 'finance', C: 'finance',
+      // Energy / oil & gas
+      XOM: 'energy', CVX: 'energy', OXY: 'energy', SLB: 'energy', COP: 'energy',
+      // Pharma / healthcare
+      PFE: 'pharma', JNJ: 'pharma', MRNA: 'pharma', UNH: 'pharma', LLY: 'pharma', ABBV: 'pharma',
+      // Food & beverage
+      KO: 'food', PEP: 'food', MCD: 'food', SBUX: 'food', CMG: 'food'
+    };
+    return map[t] || 'generic';
+  }
+
+  function categoryIcon(category, color, size) {
+    size = size || 48;
+    var h = Math.abs(seedHash(category));
+    var light = shadeColor(color, 35);
+    var dark = shadeColor(color, -30);
+    var OUTLINE = '#0A0A0A';
+    var svg = '<svg width="' + size + '" height="' + size + '" viewBox="0 0 64 64">';
+    svg += '<defs>' +
+      '<radialGradient id="cat' + h + '" cx="38%" cy="26%" r="85%"><stop offset="0%" stop-color="' + light + '"/><stop offset="60%" stop-color="' + color + '"/><stop offset="100%" stop-color="' + dark + '"/></radialGradient>' +
+      '<pattern id="catDots' + h + '" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1.4" cy="1.4" r="1.4" fill="rgba(0,0,0,0.28)"/></pattern>' +
+      '<filter id="catShadow' + h + '" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.2" flood-color="#000" flood-opacity="0.5"/></filter>' +
+      '</defs>';
+    // Rounded backdrop tile shared by all categories
+    svg += '<rect x="3" y="3" width="58" height="58" rx="12" fill="url(#cat' + h + ')" stroke="' + OUTLINE + '" stroke-width="3.5"/>';
+    // Comic-style radial action burst behind the icon
+    svg += '<g clip-path="url(#catClip' + h + ')">';
+    svg += '<defs><clipPath id="catClip' + h + '"><rect x="3" y="3" width="58" height="58" rx="12"/></clipPath></defs>';
+    var rays = '';
+    for (var ri = 0; ri < 12; ri++) {
+      var ang1 = (ri / 12) * Math.PI * 2;
+      var ang2 = ang1 + Math.PI / 12;
+      var x1 = 32 + Math.cos(ang1) * 60, y1 = 32 + Math.sin(ang1) * 60;
+      var x2 = 32 + Math.cos(ang2) * 60, y2 = 32 + Math.sin(ang2) * 60;
+      if (ri % 2 === 0) rays += '<path d="M32 32 L' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' L' + x2.toFixed(1) + ' ' + y2.toFixed(1) + ' Z" fill="rgba(255,255,255,0.09)"/>';
+    }
+    svg += rays;
+    // Halftone dot texture overlay (classic ink-print comic effect)
+    svg += '<rect x="3" y="3" width="58" height="58" fill="url(#catDots' + h + ')"/>';
+    svg += '</g>';
+    // Bold ink border on top of the halftone
+    svg += '<rect x="3" y="3" width="58" height="58" rx="12" fill="none" stroke="' + OUTLINE + '" stroke-width="3.5"/>';
+    svg += '<g filter="url(#catShadow' + h + ')">';
+
+    if (category === 'chip') {
+      // AI/computer chip on a circuit board
+      svg += '<g stroke="rgba(255,255,255,0.55)" stroke-width="1.6" stroke-linecap="round">' +
+        '<line x1="18" y1="4" x2="18" y2="14"/><line x1="32" y1="4" x2="32" y2="14"/><line x1="46" y1="4" x2="46" y2="14"/>' +
+        '<line x1="18" y1="50" x2="18" y2="60"/><line x1="32" y1="50" x2="32" y2="60"/><line x1="46" y1="50" x2="46" y2="60"/>' +
+        '<line x1="4" y1="18" x2="14" y2="18"/><line x1="4" y1="32" x2="14" y2="32"/><line x1="4" y1="46" x2="14" y2="46"/>' +
+        '<line x1="50" y1="18" x2="60" y2="18"/><line x1="50" y1="32" x2="60" y2="32"/><line x1="50" y1="46" x2="60" y2="46"/>' +
+        '</g>';
+      svg += '<rect x="17" y="17" width="30" height="30" rx="4" fill="rgba(0,0,0,0.35)" stroke="' + OUTLINE + '" stroke-width="2"/>';
+      svg += '<rect x="24" y="24" width="16" height="16" rx="2" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.4"/>';
+      svg += '<circle cx="32" cy="32" r="3" fill="rgba(255,255,255,0.85)"/>';
+    } else if (category === 'car') {
+      // Simple car silhouette
+      svg += '<path d="M12 40 L16 28 Q18 24 23 24 L41 24 Q46 24 48 28 L52 40 Z" fill="rgba(0,0,0,0.3)" stroke="' + OUTLINE + '" stroke-width="2.25" stroke-linejoin="round"/>';
+      svg += '<rect x="10" y="38" width="44" height="8" rx="3" fill="rgba(0,0,0,0.3)" stroke="' + OUTLINE + '" stroke-width="2.25"/>';
+      svg += '<path d="M20 28 L24 24 L40 24 L44 28 Z" fill="rgba(255,255,255,0.25)"/>';
+      svg += '<circle cx="20" cy="46" r="6" fill="#1a1a1a" stroke="rgba(255,255,255,0.6)" stroke-width="2"/><circle cx="44" cy="46" r="6" fill="#1a1a1a" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>';
+      svg += '<circle cx="16" cy="34" r="2" fill="#FFE066"/><circle cx="48" cy="34" r="2" fill="#FFE066"/>';
+    } else if (category === 'software') {
+      // Code window with brackets
+      svg += '<rect x="10" y="14" width="44" height="34" rx="4" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="2.25"/>';
+      svg += '<circle cx="16" cy="19" r="1.6" fill="#F87171"/><circle cx="21" cy="19" r="1.6" fill="#FBBF24"/><circle cx="26" cy="19" r="1.6" fill="#4ADE80"/>';
+      svg += '<text x="32" y="38" font-family="Consolas,Menlo,monospace" font-size="15" font-weight="700" fill="rgba(255,255,255,0.85)" text-anchor="middle">&lt;/&gt;</text>';
+    } else if (category === 'tech') {
+      // Smartphone / device
+      svg += '<rect x="21" y="10" width="22" height="44" rx="5" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="2.25"/>';
+      svg += '<rect x="24" y="15" width="16" height="28" rx="1.5" fill="rgba(255,255,255,0.18)"/>';
+      svg += '<circle cx="32" cy="48" r="2.4" fill="rgba(255,255,255,0.6)"/>';
+    } else if (category === 'retail') {
+      // Shopping bag
+      svg += '<path d="M16 22 L48 22 L45 52 L19 52 Z" fill="rgba(0,0,0,0.3)" stroke="' + OUTLINE + '" stroke-width="2.25" stroke-linejoin="round"/>';
+      svg += '<path d="M23 22 V16 Q23 9 32 9 Q41 9 41 16 V22" fill="none" stroke="' + OUTLINE + '" stroke-width="2.5" stroke-linecap="round"/>';
+      svg += '<line x1="24" y1="32" x2="40" y2="32" stroke="rgba(255,255,255,0.4)" stroke-width="1.6"/>';
+    } else if (category === 'finance') {
+      // Bank / column building
+      svg += '<polygon points="32,10 54,22 10,22" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="2.25" stroke-linejoin="round"/>';
+      svg += '<rect x="10" y="24" width="44" height="4" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="1.5"/>';
+      svg += '<rect x="15" y="30" width="4" height="18" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="1.5"/>' +
+        '<rect x="24" y="30" width="4" height="18" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="1.5"/>' +
+        '<rect x="36" y="30" width="4" height="18" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="1.5"/>' +
+        '<rect x="45" y="30" width="4" height="18" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="1.5"/>';
+      svg += '<rect x="10" y="50" width="44" height="4" rx="1" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="1.5"/>';
+    } else if (category === 'energy') {
+      // Oil drop / energy flame
+      svg += '<path d="M32 10 Q44 26 44 36 A12 12 0 1 1 20 36 Q20 26 32 10 Z" fill="rgba(0,0,0,0.3)" stroke="' + OUTLINE + '" stroke-width="2.25" stroke-linejoin="round"/>';
+      svg += '<ellipse cx="27" cy="38" rx="3.5" ry="5" fill="rgba(255,255,255,0.3)"/>';
+    } else if (category === 'pharma') {
+      // Medical cross / capsule
+      svg += '<rect x="15" y="24" width="34" height="16" rx="8" fill="rgba(0,0,0,0.3)" stroke="' + OUTLINE + '" stroke-width="2.25"/>';
+      svg += '<rect x="15" y="24" width="17" height="16" rx="8" fill="rgba(255,255,255,0.28)"/>';
+      svg += '<line x1="32" y1="24" x2="32" y2="40" stroke="' + OUTLINE + '" stroke-width="2"/>';
+    } else if (category === 'food') {
+      // Cup / drink
+      svg += '<path d="M20 20 H44 L40 48 Q40 52 32 52 Q24 52 24 48 Z" fill="rgba(0,0,0,0.3)" stroke="' + OUTLINE + '" stroke-width="2.25" stroke-linejoin="round"/>';
+      svg += '<ellipse cx="32" cy="20" rx="12" ry="3.5" fill="rgba(255,255,255,0.3)" stroke="' + OUTLINE + '" stroke-width="1.5"/>';
+      svg += '<line x1="26" y1="27" x2="27.5" y2="43" stroke="rgba(255,255,255,0.3)" stroke-width="1.6"/><line x1="38" y1="27" x2="36.5" y2="43" stroke="rgba(255,255,255,0.3)" stroke-width="1.6"/>';
+    } else {
+      // Generic — rising bar chart
+      svg += '<rect x="14" y="36" width="8" height="16" rx="1.5" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="2"/>';
+      svg += '<rect x="28" y="26" width="8" height="26" rx="1.5" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="2"/>';
+      svg += '<rect x="42" y="16" width="8" height="36" rx="1.5" fill="rgba(0,0,0,0.32)" stroke="' + OUTLINE + '" stroke-width="2"/>';
+      svg += '<path d="M14 22 L26 14 L36 18 L50 6" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      svg += '<polygon points="45,6 50,6 50,11" fill="rgba(255,255,255,0.6)"/>';
+    }
+    svg += '</g>';
+    svg += '</svg>';
+    return svg;
+  }
+
+
+  function starIcon(filled, size, color) {
+    size = size || 14;
+    var pts = '12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26';
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24">' +
+      '<polygon points="' + pts + '" fill="' + (filled ? color : 'none') + '" stroke="' + (filled ? color : 'rgba(255,255,255,0.28)') + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+      '</svg>';
+  }
+
+  function icon(name, size, color) {
+    size = size || 16;
+    color = color || 'currentColor';
+    var paths = {
+      plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+      trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>',
+      refresh: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0 0 20.49 15"/>',
+      chevronDown: '<polyline points="6 9 12 15 18 9"/>',
+      chevronUp: '<polyline points="18 15 12 9 6 15"/>',
+      download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+      upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+      cloudUp: '<path d="M16 16l-4-4-4 4"/><path d="M12 12v9"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>',
+      cloudDown: '<path d="M8 17l4 4 4-4"/><path d="M12 12v9"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>',
+      wallet: '<path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1"/><path d="M21 12h-4a2 2 0 0 0 0 4h4v-4z"/>',
+      coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/>',
+      trendUp: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+      trendDown: '<polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>',
+      edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+      clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+      archive: '<rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><line x1="10" y1="13" x2="14" y2="13"/>'
+    };
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="' + color +
+      '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (paths[name] || '') + '</svg>';
+  }
+
+  // ---------- State ----------
+  var investments = [];
+  var profits = [];
+  var imageLibrary = {}; // maps image URL/dataURL -> original filename, so the picker can show names
+  var customTotalPrincipal = ''; // manually entered, independent of the auto-calculated investment totals
+  var customPrincipalEditing = false;
+  var cashFlows = []; // portfolio-level cash in/out entries, not tied to any single investment item
+  var cashFlowDraft = { name: '', amount: '', date: '', kind: 'CF' };
+  var showCashFlowList = false;
+  var showCustomSection = false;
+  var bankTransfers = []; // principal contributions: [{id, date, investor, amount, fee, note}]
+  var bankTransferDraft = { date: '', investor: '', amount: '', fee: '', note: '' };
+  var showBankTransfers = false;
+  var showBankTransferList = false;
+  var editingBankTransferId = null;
+  var editBankTransferDraft = {};
+  var marginAccounts = []; // [{id, name, principal, ratio}] — each account has its own principal and margin ratio
+  var newAccountDraft = { name: '', principal: '', ratio: 100 };
+  var editingAccountId = null;
+  var editAccountDraft = {};
+  var showMarginSection = false;
+  var syncUrl = '';
+  var syncUrlEditing = true;
+  var finnhubApiKey = '';
+  var finnhubKeyEditing = true;
+  var loaded = false;
+  var SHOW_SOLID_LIQUID = false; // temporarily hidden — set to true to bring the "Solid / Liquid Split" card back
+
+  var newInvDraft = { type: 'stock', name: '', principal: '', current: '', shares: '', price: '', buyPrice: '', startDate: '', optionDays: '', earningsDate: '', customImage: '', assetType: '' };
+  var profitDrafts = {};
+  var profitPage = {};
+  var expanded = {};
+  var archivePanelOpen = false;
+  var showAddForm = false;
+  var showFinnhubSection = false;
+  var showCloudSync = false;
+  var showLocalBackup = false;
+  var archiveViewExpanded = {};
+  var selectedCardId = null;
+  var priceFetching = false;
+  var refreshingId = null;
+  var editingInvId = null;
+  var editDraft = {};
+  var editingProfitId = null;
+  var editProfitDraft = {};
+  var syncing = false;
+
+  var msg = { error: '', priceError: '', earningsError: '', addError: '', bankError: '', importError: '', importOk: '', syncStatus: '', syncError: '' };
+  var ratioDrafts = {}; // margin-ratio inputs being typed but not yet committed, so a re-render can't wipe them
+
+  function uid() { return Math.random().toString(36).slice(2, 10); }
+
+  // Parses a number the way people actually type it. Tolerates $ / USD, thousands commas, spaces, a trailing %,
+  // accounting negatives "(1,000)", and full-width / Chinese-IME characters (５０００ ， 。 －).
+  // Returns NaN for anything it cannot read with certainty. parseFloat silently turned "5,000" into 5,
+  // "25。50" into 25 and "12abc" into 12, and rejected "$5000" outright.
+  function parseMoney(v) {
+    if (typeof v === 'number') return v;
+    var s = String(v == null ? '' : v).trim();
+    if (s === '') return NaN;
+    s = s.replace(/[！-～]/g, function (ch) { return String.fromCharCode(ch.charCodeAt(0) - 0xFEE0); }) // full-width -> ASCII
+      .replace(/　/g, ' ')
+      .replace(/[。｡]/g, '.')       // 。 typed as a decimal point
+      .replace(/、/g, ',')               // 、
+      .replace(/[−–—]/g, '-'); // minus / dashes
+    var negative = /^\(.*\)$/.test(s);
+    if (negative) s = s.slice(1, -1);
+    s = s.replace(/usd/ig, '').replace(/[$\s]/g, '').replace(/%$/, '');
+    if (s.indexOf(',') !== -1) {
+      // commas must be real thousands separators (1,000 / 12,345,678.90); "1,5" is ambiguous, so refuse it
+      if (!/^[+-]?\d{1,3}(,\d{3})+(\.\d*)?$/.test(s)) return NaN;
+      s = s.replace(/,/g, '');
+    }
+    if (!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+    var n = parseFloat(s);
+    return negative ? -n : n;
+  }
+
+  function fmt(n) {
+    var sign = n < 0 ? '-' : '';
+    var abs = Math.abs(n);
+    var hasCents = Math.round(abs * 100) % 100 !== 0;
+    return sign + '$' + abs.toLocaleString('en-US', { minimumFractionDigits: hasCents ? 2 : 0, maximumFractionDigits: 2 });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // Wraps a form input with a clear label above it, so each field's purpose stays visible even after it's filled in.
+  function fieldGroup(labelText, inputHtml, spanClass) {
+    return '<div class="' + (spanClass ? spanClass + ' ' : '') + 'field-group"><label class="field-label">' + esc(labelText) + '</label>' + inputHtml + '</div>';
+  }
+
+  function renderSolidLiquidGauge() {
+    var totalP = totalPrincipal();
+    var solidP = solidPrincipalTotal();
+    var liquidP = liquidPrincipalTotal();
+    var solidPct = totalP ? (solidP / totalP * 100) : 0;
+    var liquidPct = totalP ? (liquidP / totalP * 100) : 0;
+
+    function polar(cx, cy, r, angleDeg) {
+      var rad = angleDeg * Math.PI / 180;
+      return { x: cx + r * Math.cos(rad), y: cy - r * Math.sin(rad) };
+    }
+    function arcPath(cx, cy, r, fromDeg, toDeg) {
+      var p1 = polar(cx, cy, r, fromDeg);
+      var p2 = polar(cx, cy, r, toDeg);
+      var largeArc = Math.abs(fromDeg - toDeg) > 180 ? 1 : 0;
+      return 'M ' + p1.x.toFixed(2) + ' ' + p1.y.toFixed(2) + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + p2.x.toFixed(2) + ' ' + p2.y.toFixed(2);
+    }
+    // value 0..100 maps across a 180 degree sweep (classic semicircle gauge), left to right through the top.
+    var START = 180, SWEEP = 180;
+    function angleFor(v) { return START - (v / 100) * SWEEP; }
+
+    var cx = 160, cy = 172;
+    var rOuterTicks = 148, rBoost = 132, rDialEdge = 108, rNumbers = 76, trackWidth = 14;
+    var solidEndAngle = angleFor(solidPct);
+    var liquidEndAngle = angleFor(solidPct + liquidPct);
+    var needleAngle = solidEndAngle; // marks the boundary between Solid and Liquid coverage
+
+    var svg = '<svg viewBox="0 0 320 210" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:380px;height:auto;display:block;margin:0 auto">';
+    svg += '<defs>' +
+      '<filter id="gaugeGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+      '<filter id="textGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+      '<radialGradient id="gaugeBg" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#1a2620"/><stop offset="70%" stop-color="#0a120e"/><stop offset="100%" stop-color="#020403"/></radialGradient>' +
+      '<radialGradient id="dialFace" cx="42%" cy="20%" r="85%"><stop offset="0%" stop-color="#173328"/><stop offset="60%" stop-color="#0b1c15"/><stop offset="100%" stop-color="#040b08"/></radialGradient>' +
+      '<radialGradient id="needleHub" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#fff7e6"/><stop offset="45%" stop-color="#e8c468"/><stop offset="100%" stop-color="#5a4116"/></radialGradient>' +
+      '<linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#FFE9B0"/><stop offset="100%" stop-color="#EF4444"/></linearGradient>' +
+      '<radialGradient id="coreGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#EAFBFF"/><stop offset="45%" stop-color="#7DE8FF"/><stop offset="100%" stop-color="rgba(56,189,248,0)"/></radialGradient>' +
+      '</defs>';
+    // Dark ambient glow backdrop
+    svg += '<path d="M ' + (cx - 158) + ' ' + cy + ' A 158 158 0 0 1 ' + (cx + 158) + ' ' + cy + ' L ' + (cx + 158) + ' ' + (cy + 30) + ' L ' + (cx - 158) + ' ' + (cy + 30) + ' Z" fill="url(#gaugeBg)"/>';
+    // Outer "boost meter" ring — equal-length radial tick marks arranged in an arc, like a rainbow of ticks
+    var segCount = 40;
+    var segStepDeg = SWEEP / (segCount - 1);
+    var tickLen = 13, tickThick = 3.5;
+    for (var si = 0; si < segCount; si++) {
+      var segAngle = START - si * segStepDeg;
+      var segValue = (si / (segCount - 1)) * 100;
+      var segColor = segValue <= solidPct ? '#C9A227' : (segValue <= solidPct + liquidPct ? '#38BDF8' : 'rgba(255,255,255,0.4)');
+      var farP = polar(cx, cy, rBoost + tickLen / 2, segAngle);
+      var nearP = polar(cx, cy, rBoost - tickLen / 2, segAngle);
+      var farA = polar(farP.x, farP.y, tickThick / 2, segAngle + 90);
+      var farB = polar(farP.x, farP.y, tickThick / 2, segAngle - 90);
+      var nearA = polar(nearP.x, nearP.y, tickThick / 2, segAngle + 90);
+      var nearB = polar(nearP.x, nearP.y, tickThick / 2, segAngle - 90);
+      svg += '<polygon points="' + farA.x.toFixed(1) + ',' + farA.y.toFixed(1) + ' ' + farB.x.toFixed(1) + ',' + farB.y.toFixed(1) + ' ' + nearB.x.toFixed(1) + ',' + nearB.y.toFixed(1) + ' ' + nearA.x.toFixed(1) + ',' + nearA.y.toFixed(1) + '" fill="' + segColor + '"/>';
+    }
+    // Inner dial face
+    svg += '<path d="M ' + (cx - rDialEdge) + ' ' + cy + ' A ' + rDialEdge + ' ' + rDialEdge + ' 0 0 1 ' + (cx + rDialEdge) + ' ' + cy + ' Z" fill="url(#dialFace)" stroke="#E8C468" stroke-width="2.5"/>';
+    // Radial spokes from center (subtle)
+    for (var sp = 0; sp <= 100; sp += 10) {
+      var spEnd = polar(cx, cy, rDialEdge - 4, angleFor(sp));
+      svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + spEnd.x.toFixed(1) + '" y2="' + spEnd.y.toFixed(1) + '" stroke="rgba(232,196,104,0.06)" stroke-width="1"/>';
+    }
+    // Tick marks + numbers around the inner dial — all neon-glowing
+    for (var t = 0; t <= 100; t += 10) {
+      var isMajor = t % 20 === 0 || t === 50;
+      var ang = angleFor(t);
+      var p1 = polar(cx, cy, rDialEdge - 4, ang);
+      var p2 = polar(cx, cy, rDialEdge - (isMajor ? 16 : 10), ang);
+      var tickNeon = t <= solidPct ? '#FFE9B0' : (t <= solidPct + liquidPct ? '#FF8A5C' : '#F3C969');
+      svg += '<line x1="' + p1.x.toFixed(1) + '" y1="' + p1.y.toFixed(1) + '" x2="' + p2.x.toFixed(1) + '" y2="' + p2.y.toFixed(1) + '" stroke="' + tickNeon + '" stroke-width="' + (isMajor ? 2.5 : 1.5) + '"/>';
+      if (isMajor && t !== 0 && t !== 100 && t !== 50) {
+        var lp = polar(cx, cy, rNumbers, ang);
+        svg += '<text x="' + lp.x.toFixed(1) + '" y="' + lp.y.toFixed(1) + '" fill="' + tickNeon + '" font-size="9" font-weight="700" font-family="Orbitron, Consolas, monospace" text-anchor="middle" dominant-baseline="middle">' + t + '%</text>';
+      }
+    }
+    // Needle — simple straight bar (no pointed tip), red/gold gradient with glow
+    var needleTip = polar(cx, cy, rDialEdge - 10, needleAngle);
+    var needleBack = polar(cx, cy, 16, needleAngle + 180);
+    var barHalfWidth = 3.5;
+    var bTip1 = polar(needleTip.x, needleTip.y, barHalfWidth, needleAngle + 90);
+    var bTip2 = polar(needleTip.x, needleTip.y, barHalfWidth, needleAngle - 90);
+    var bBack1 = polar(needleBack.x, needleBack.y, barHalfWidth, needleAngle + 90);
+    var bBack2 = polar(needleBack.x, needleBack.y, barHalfWidth, needleAngle - 90);
+    svg += '<polygon points="' + bTip1.x.toFixed(1) + ',' + bTip1.y.toFixed(1) + ' ' + bTip2.x.toFixed(1) + ',' + bTip2.y.toFixed(1) + ' ' + bBack2.x.toFixed(1) + ',' + bBack2.y.toFixed(1) + ' ' + bBack1.x.toFixed(1) + ',' + bBack1.y.toFixed(1) + '" fill="url(#needleGrad)" filter="url(#gaugeGlow)"/>';
+    // Center — glow ring with a black fill showing "S&L"
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="22" fill="#000000"/>';
+    svg += '<circle cx="' + cx + '" cy="' + cy + '" r="22" fill="none" stroke="#E8C468" stroke-width="2.5" filter="url(#gaugeGlow)"/>';
+    svg += '<text x="' + cx + '" y="' + cy + '" fill="#E8C468" font-size="12" font-weight="800" font-family="Orbitron, Consolas, monospace" text-anchor="middle" dominant-baseline="middle" filter="url(#textGlow)">S&amp;L</text>';
+    svg += '</svg>';
+
+    var html = '<div class="card mb-8" style="text-align:center">';
+    html += '<div class="section-title">Solid / Liquid Split</div>';
+    html += svg;
+    html += '<div style="margin-top:-6px;display:inline-flex;align-items:baseline;gap:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 16px">';
+    html += '<span style="font-size:22px;font-weight:800;color:#EDEAE0;font-family:Orbitron, Consolas, monospace;text-shadow:0 0 10px rgba(255,255,255,0.3)">' + fmt(totalP) + '</span>';
+    html += '<span style="font-size:12px;font-weight:700;letter-spacing:1px;color:var(--text-muted)">TOTAL PRINCIPAL</span>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:center;gap:28px;margin-top:14px;flex-wrap:wrap;font-family:Consolas,Menlo,monospace">';
+    html += '<div style="text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#C9A227;box-shadow:0 0 6px #C9A227;display:inline-block"></span><span style="font-size:11px;color:var(--text-muted);letter-spacing:1px">SOLID</span></div><div style="font-size:18px;font-weight:700;color:#C9A227">' + solidPct.toFixed(1) + '%</div><div class="hint">' + fmt(solidP) + '</div></div>';
+    html += '<div style="text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:10px;height:10px;border-radius:2px;background:#38BDF8;box-shadow:0 0 6px #38BDF8;display:inline-block"></span><span style="font-size:11px;color:var(--text-muted);letter-spacing:1px">LIQUID</span></div><div style="font-size:18px;font-weight:700;color:#38BDF8">' + liquidPct.toFixed(1) + '%</div><div class="hint">' + fmt(liquidP) + '</div></div>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderStatCard(inv, accentColor, isSelected) {
+    if (isSelected) accentColor = '#C9A227';
+    var html = '';
+    var itemProfitSum = profitSumFor(inv.id);
+    var invDiff = inv.current - inv.principal;
+    var invPerfPct = inv.principal ? (invDiff / inv.principal * 100) : 0;
+    var invTotalPL = invDiff + itemProfitSum;
+    var invBarPct = Math.max(0, Math.min(100, 50 + Math.max(-50, Math.min(50, invPerfPct))));
+    var invAccProfitPct = inv.principal ? (itemProfitSum / inv.principal * 100) : 0;
+    var invLevel = Math.min(99, Math.max(1, Math.floor(Math.abs(invAccProfitPct))));
+    var invDayChange = (inv.type === 'stock' && inv.prevClose) ? (inv.price - inv.prevClose) : 0;
+    var invDayChangePct = (inv.type === 'stock' && inv.prevClose) ? (invDayChange / inv.prevClose * 100) : 0;
+    var optDaysLevelMap = { '2-3': 4, '7': 3, '30': 2, '60': 1 };
+    var invOptLvl = inv.type === 'stock' ? optDaysLevelMap[inv.optionDays] : null;
+    var invStarCount = 0;
+    if (invTotalPL >= 9999) invStarCount = 5;
+    else if (invTotalPL >= 5000) invStarCount = 4;
+    else if (invTotalPL >= 2500) invStarCount = 3;
+    else if (invTotalPL >= 1000) invStarCount = 2;
+    else if (invTotalPL >= 500) invStarCount = 1;
+    var selectedGlow = isSelected ? ', 0 0 0 3px rgba(255,255,255,0.95), 0 0 16px 4px rgba(255,255,255,0.5), 0 0 34px 8px rgba(201,162,39,0.85), 0 0 55px 14px rgba(201,162,39,0.5)' : '';
+    html += '<div class="stat-card-3d stat-card-border" style="background-image:linear-gradient(160deg,' + accentColor + ',rgba(0,0,0,0.55),' + accentColor + ');box-shadow:0 0 8px 1px ' + accentColor + 'CC, 0 0 14px 3px ' + accentColor + '88, 0 0 20px 4px ' + accentColor + '50' + selectedGlow + '">';
+    html += '<div class="stat-card-inner" style="background:repeating-linear-gradient(135deg, ' + accentColor + '0F 0px, ' + accentColor + '0F 1px, transparent 1px, transparent 6px), radial-gradient(circle at 85% 8%, ' + accentColor + '33, transparent 45%), linear-gradient(125deg, rgba(232,196,104,0.12) 0%, transparent 12%, transparent 26%, rgba(255,255,255,0.05) 34%, transparent 46%, transparent 58%, rgba(232,196,104,0.08) 66%, transparent 78%, transparent 90%, rgba(255,255,255,0.04) 100%), linear-gradient(165deg,#0A0A0A 0%,#020202 55%,#000000 100%);border-radius:13px;clip-path:polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);padding:14px;display:flex;flex-direction:column;gap:10px;border:1px solid rgba(201,162,39,0.22)">';
+    html += '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px;font-family:Consolas,Menlo,monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.05em">';
+    html += '<div style="display:flex;align-items:center;gap:4px">';
+    html += '<span class="stat-chip" style="color:' + accentColor + '">' + (inv.type === 'stock' ? 'STOCK' : 'ASSET') + '</span>';
+    if (inv.assetType === 'Solid' || inv.assetType === 'Liquid') {
+      var atColor = inv.assetType === 'Solid' ? '#C9A227' : '#38BDF8';
+      html += '<span title="' + inv.assetType + '" style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;background:' + atColor + ';color:#0A0A0A;font-weight:800;font-size:10px;box-shadow:0 0 6px ' + atColor + '99">' + inv.assetType.charAt(0) + '</span>';
+    }
+    html += '</div>';
+    html += '<span class="stat-chip" style="white-space:nowrap;color:' + accentColor + '">LV.' + invLevel + (invOptLvl ? ' <span style="color:#E8C468">&middot; OPT.' + invOptLvl + '</span>' : '') + '</span>';
+    html += '</div>';
+    html += '<div style="display:flex;align-items:center;justify-content:center;gap:6px;overflow:hidden">';
+    html += '<span style="color:' + accentColor + '99;font-size:11px;flex-shrink:0">&#10022;</span>';
+    html += '<div style="font-family:\'Noto Serif TC\',serif;font-weight:700;font-size:17px;letter-spacing:0.04em;background:linear-gradient(135deg,#F3E3B8 0%,#E8C468 45%,#C9A227 70%,#F3E3B8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;filter:drop-shadow(0 0 8px ' + accentColor + '66)" title="' + esc(inv.name) + '">' + esc(inv.name) + '</div>';
+    html += '<span style="color:' + accentColor + '99;font-size:11px;flex-shrink:0">&#10022;</span>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:center;gap:2px">';
+    for (var starI = 1; starI <= 5; starI++) {
+      html += starIcon(starI <= invStarCount, 24, '#E8C468');
+    }
+    html += '</div>';
+    html += '<div style="position:relative;display:flex;align-items:center;justify-content:center;width:100%;aspect-ratio:1/1;border-radius:10px;background:radial-gradient(circle,' + accentColor + '33,transparent 70%), #000000;border:1px solid rgba(255,255,255,0.06);overflow:hidden">';
+    html += '<div class="stat-ring-glow" style="background:conic-gradient(from 0deg, transparent, ' + accentColor + '55, transparent 30%)"></div>';
+    if (inv.customImage) {
+      html += '<img src="' + esc(inv.customImage) + '" alt="" style="position:relative;z-index:1;width:100%;height:100%;object-fit:cover" />';
+      html += '<div class="img-shine-sweep"></div>';
+    } else {
+      html += '<div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%">' + categoryIcon(inv.type === 'stock' ? detectCategory(baseTicker(inv.name)) : 'generic', accentColor, 78) + '</div>';
+    }
+    html += '<div style="position:absolute;top:3px;left:3px;z-index:3;display:flex;gap:3px">';
+    html += '<button type="button" class="icon-btn" data-upload-image="' + inv.id + '" title="Upload custom image" aria-label="Upload custom image" style="background:rgba(0,0,0,0.55);padding:3px">' + icon('upload', 12, '#EDEAE0') + '</button>';
+    if (inv.customImage) {
+      html += '<button type="button" class="icon-btn" data-remove-image="' + inv.id + '" title="Remove custom image" aria-label="Remove custom image" style="background:rgba(0,0,0,0.55);padding:3px">' + icon('trash', 12, '#F87171') + '</button>';
+    }
+    html += '</div>';
+    if (inv.type === 'stock') {
+      html += '<div style="position:absolute;bottom:3px;right:3px;z-index:2;width:50px;height:50px;display:flex;align-items:center;justify-content:center">';
+      html += '<img src="https://financialmodelingprep.com/image-stock/' + encodeURIComponent(baseTicker(inv.name).toUpperCase()) + '.png" alt="" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 4px ' + accentColor + 'CC) drop-shadow(0 0 9px ' + accentColor + '99) drop-shadow(0 1px 3px rgba(0,0,0,0.6))" onerror="this.parentElement.style.display=\'none\'" />';
+      html += '</div>';
+    }
+    html += '</div>';
+    if (inv.type === 'stock' && inv.price) {
+      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;font-family:Consolas,Menlo,monospace">';
+      html += '<span style="font-size:20px;font-weight:700;color:' + (invDayChange >= 0 ? '#4ADE80' : '#F87171') + ';text-shadow:0 0 8px ' + (invDayChange >= 0 ? 'rgba(74,222,128,0.35)' : 'rgba(248,113,113,0.35)') + '">$' + Number(inv.price).toFixed(2) + '</span>';
+      html += '<span class="stat-chip" style="font-size:12px;font-weight:700;color:' + (invDayChange >= 0 ? '#4ADE80' : '#F87171') + '">' + (invDayChange >= 0 ? '&#9650; ' : '&#9660; ') + (invDayChange >= 0 ? '+' : '') + invDayChangePct.toFixed(2) + '%</span>';
+      html += '</div>';
+      if (inv.lastPriceTimestamp) {
+        var secsAgo = Math.max(0, Math.floor((Date.now() - inv.lastPriceTimestamp) / 1000));
+        var agoText = secsAgo < 60 ? (secsAgo + 's ago') : (Math.floor(secsAgo / 60) + 'm ago');
+        html += '<div class="updated-ago-label" data-updated-ts="' + inv.lastPriceTimestamp + '" style="font-size:9px;color:var(--text-muted);text-align:right;margin-top:-4px">updated ' + agoText + '</div>';
+      }
+    }
+    html += '<div>';
+    html += '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:3px"><span>PERF</span><span>' + (invPerfPct >= 0 ? '+' : '') + invPerfPct.toFixed(1) + '%</span></div>';
+    html += '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + invBarPct + '%;background:linear-gradient(90deg,' + (invDiff >= 0 ? '#16803D,#22C55E' : '#991B1B,#EF4444') + ');box-shadow:0 0 8px ' + (invDiff >= 0 ? '#22C55E' : '#EF4444') + '99"></div></div>';
+    html += '</div>';
+    var invAccAbsPct = Math.abs(invAccProfitPct);
+    var invLvlFrac = invAccAbsPct - Math.floor(invAccAbsPct);
+    var invLvlBarPct = Math.max(0, Math.min(100, invLvlFrac * 100));
+    var invPctToNext = Math.max(0, 1 - invLvlFrac);
+    html += '<div>';
+    var invAmountToNext = (invPctToNext / 100) * inv.principal;
+    html += '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:3px"><span>NEXT LV.' + (invLevel + 1) + '</span><span>' + invPctToNext.toFixed(2) + '% (' + fmt(invAmountToNext) + ') to go</span></div>';
+    html += '<div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + invLvlBarPct + '%;background:linear-gradient(90deg,' + shadeColor(accentColor, -25) + ',' + accentColor + ');box-shadow:0 0 8px ' + accentColor + '99"></div></div>';
+    html += '</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:5px;font-family:Consolas,Menlo,monospace;font-size:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">';
+    if (inv.type === 'stock') {
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">SHARES</span><span style="font-weight:700;color:#38BDF8">' + esc(inv.shares) + '</span></div>';
+      if (inv.earningsDate) {
+        var invDaysUntilEarnings = Math.floor((new Date(inv.earningsDate + 'T00:00:00') - new Date(todayStr() + 'T00:00:00')) / 86400000);
+        var invEarningsColor = invDaysUntilEarnings <= 30 ? '#EF4444' : (invDaysUntilEarnings <= 60 ? '#FBBF24' : '#22C55E');
+        html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">ER</span><span class="' + (invDaysUntilEarnings === 0 ? 'earnings-today' : '') + '" style="font-weight:700;color:' + invEarningsColor + '">' + esc(inv.earningsDate) + '</span></div>';
+      }
+    }
+    html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">PRINCIPAL</span><span style="font-weight:700;color:#6C8CFF">' + fmt(inv.principal) + '</span></div>';
+    html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">ACC. PROFIT</span><span style="font-weight:700;color:#D4A017">' + fmt(itemProfitSum) + '</span></div>';
+    html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">TOTAL P/L</span><span style="font-weight:700;color:' + (invTotalPL >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(invTotalPL) + '</span></div>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderProfitEntry(p) {
+    if (editingProfitId === p.id) {
+      var h = '<div class="profit-entry profit-entry-editing" style="display:block;padding:10px;">';
+      h += '<div class="form-grid" style="grid-template-columns:1fr 1fr">';
+      h += '<input type="text" class="field" id="editProfitName" placeholder="Profit item name" value="' + esc(editProfitDraft.name) + '" />';
+      h += '<input type="text" class="field" id="editProfitAmount" placeholder="Amount" inputmode="decimal" value="' + esc(editProfitDraft.amount) + '" />';
+      h += '</div>';
+      h += '<div class="sync-actions" style="margin-top:8px">';
+      h += '<button class="btn-gold" data-save-edit-profit="' + p.id + '">Save</button>';
+      h += '<button class="btn-ghost" data-cancel-edit-profit="1">Cancel</button>';
+      h += '</div></div>';
+      return h;
+    }
+    var out = '<div class="profit-entry">';
+    out += '<div><div class="profit-entry-name">' + esc(p.name) + '</div><div class="profit-entry-date">' + esc(p.date) + '</div></div>';
+    out += '<div class="profit-entry-right"><span style="color:#E8C468">' + fmt(p.amount) + '</span>';
+    out += '<button class="icon-btn" data-edit-profit="' + p.id + '" title="Edit" aria-label="Edit profit entry">' + icon('edit', 14, '#8B93AD') + '</button>';
+    out += '<button class="icon-btn" data-remove-profit="' + p.id + '" title="Delete" aria-label="Delete profit entry">' + icon('trash', 14, '#8B93AD') + '</button></div>';
+    out += '</div>';
+    return out;
+  }
+
+  // ---------- Storage ----------
+  var LS_PREFIX = 'investmentStats_';
+
+  function loadAll() {
+    try {
+      var raw = localStorage.getItem(LS_PREFIX + 'investments');
+      if (raw) investments = JSON.parse(raw);
+    } catch (e) {}
+    try {
+      var raw2 = localStorage.getItem(LS_PREFIX + 'profits');
+      if (raw2) profits = JSON.parse(raw2);
+    } catch (e) {}
+    try {
+      var raw3 = localStorage.getItem(LS_PREFIX + 'syncUrl');
+      if (raw3) { syncUrl = raw3; syncUrlEditing = false; }
+    } catch (e) {}
+    try {
+      var raw4 = localStorage.getItem(LS_PREFIX + 'finnhubApiKey');
+      if (raw4) { finnhubApiKey = raw4; finnhubKeyEditing = false; }
+    } catch (e) {}
+    try {
+      var raw5 = localStorage.getItem(LS_PREFIX + 'imageLibrary');
+      if (raw5) imageLibrary = JSON.parse(raw5);
+    } catch (e) {}
+    try {
+      var raw6 = localStorage.getItem(LS_PREFIX + 'customTotalPrincipal');
+      if (raw6) { customTotalPrincipal = raw6; customPrincipalEditing = false; }
+    } catch (e) {}
+    try {
+      var raw7 = localStorage.getItem(LS_PREFIX + 'cashFlows');
+      if (raw7) cashFlows = JSON.parse(raw7);
+    } catch (e) {}
+    try {
+      var raw8 = localStorage.getItem(LS_PREFIX + 'marginAccounts');
+      if (raw8) marginAccounts = JSON.parse(raw8);
+    } catch (e) {}
+    try {
+      var raw9 = localStorage.getItem(LS_PREFIX + 'bankTransfers');
+      if (raw9) { var parsedBt = JSON.parse(raw9); if (Array.isArray(parsedBt)) bankTransfers = parsedBt; }
+    } catch (e) {}
+    backfillCashFlowForExistingInvestments();
+    loaded = true;
+    render();
+    autoRefreshStockPrices();
+    setInterval(autoRefreshStockPrices, PRICE_REFRESH_INTERVAL_MS);
+    setInterval(tickUpdatedAgoLabels, 5000);
+  }
+
+  // One-time backfill: investment items created before the automatic Cash Flow tracking
+  // feature existed don't have their "Invested:"/"Archived:" entries yet — add them now
+  // (guarded so it only ever runs once, checked via a persisted flag).
+  function backfillCashFlowForExistingInvestments() {
+    var alreadyDone = false;
+    try { alreadyDone = localStorage.getItem(LS_PREFIX + 'cashFlowBackfillDone') === '1'; } catch (e) {}
+    if (alreadyDone) return;
+    var added = [];
+    investments.forEach(function (inv) {
+      var hasDebit = cashFlows.some(function (c) { return c.sourceInvestmentId === inv.id && c.cfType === 'invest-debit'; });
+      if (!hasDebit) {
+        added.push({ id: uid(), name: 'Invested: ' + inv.name, amount: -inv.principal, date: inv.startDate || todayStr(), sourceInvestmentId: inv.id, cfType: 'invest-debit' });
+      }
+      if (inv.archived) {
+        var hasCredit = cashFlows.some(function (c) { return c.sourceInvestmentId === inv.id && c.cfType === 'archive-credit'; });
+        if (!hasCredit) {
+          var transferAmount = inv.current + profitSumFor(inv.id);
+          added.push({ id: uid(), name: 'Archived: ' + inv.name, amount: transferAmount, date: inv.archivedDate || todayStr(), sourceInvestmentId: inv.id, cfType: 'archive-credit' });
+        }
+      }
+    });
+    if (added.length > 0) {
+      cashFlows = cashFlows.concat(added);
+      persist('cashFlows', cashFlows);
+    }
+    try { localStorage.setItem(LS_PREFIX + 'cashFlowBackfillDone', '1'); } catch (e) {}
+  }
+
+  function persist(key, value) {
+    try {
+      var str = typeof value === 'string' ? value : JSON.stringify(value);
+      localStorage.setItem(LS_PREFIX + key, str);
+      msg.error = '';
+    } catch (e) {
+      msg.error = 'Save failed: ' + (e && e.message ? e.message : 'Browser may have disabled local storage (e.g. private mode)');
+    }
+    render();
+  }
+
+  // ---------- Derived ----------
+  var _activeCache = null;
+  var _activeCacheKey = null;
+  function activeInvestments() {
+    if (_activeCacheKey === investments) return _activeCache;
+    _activeCache = investments.filter(function (i) { return !i.archived; });
+    _activeCacheKey = investments;
+    return _activeCache;
+  }
+
+  var _sortedActiveCache = null;
+  var _sortedActiveCacheKey = null;
+  var _sortedActiveProfitsRef = null;
+  function sortedActiveInvestments() {
+    if (_sortedActiveCacheKey === investments && _sortedActiveProfitsRef === profits) return _sortedActiveCache;
+    _sortedActiveCache = activeInvestments().slice().sort(function (a, b) { return starCountFor(b) - starCountFor(a); });
+    _sortedActiveCacheKey = investments;
+    _sortedActiveProfitsRef = profits;
+    return _sortedActiveCache;
+  }
+
+  function starCountFor(inv) {
+    var diff = inv.current - inv.principal;
+    var totalPL = diff + profitSumFor(inv.id);
+    if (totalPL >= 9999) return 5;
+    if (totalPL >= 5000) return 4;
+    if (totalPL >= 2500) return 3;
+    if (totalPL >= 1000) return 2;
+    if (totalPL >= 500) return 1;
+    return 0;
+  }
+  function archivedInvestments() { return investments.filter(function (i) { return i.archived; }); }
+  function totalPrincipal() { return activeInvestments().reduce(function (s, i) { return s + i.principal; }, 0); }
+  function totalCurrent() { return activeInvestments().reduce(function (s, i) { return s + i.current; }, 0); }
+  function solidPrincipalTotal() { return activeInvestments().filter(function (i) { return i.assetType === 'Solid'; }).reduce(function (s, i) { return s + i.principal; }, 0); }
+  function liquidPrincipalTotal() { return activeInvestments().filter(function (i) { return i.assetType === 'Liquid'; }).reduce(function (s, i) { return s + i.principal; }, 0); }
+  var _profitsIndexCache = null;
+  var _profitsIndexRef = null;
+  function profitsIndex() {
+    if (_profitsIndexRef === profits) return _profitsIndexCache;
+    var idx = {};
+    for (var pi = 0; pi < profits.length; pi++) {
+      var p = profits[pi];
+      if (!idx[p.investmentId]) idx[p.investmentId] = [];
+      idx[p.investmentId].push(p);
+    }
+    _profitsIndexCache = idx;
+    _profitsIndexRef = profits;
+    return idx;
+  }
+  function profitsFor(invId) { return profitsIndex()[invId] || []; }
+  function profitSumFor(invId) {
+    var list = profitsIndex()[invId];
+    if (!list) return 0;
+    var sum = 0;
+    for (var i = 0; i < list.length; i++) sum += list[i].amount;
+    return sum;
+  }
+  function unassignedProfits() {
+    var ids = investments.map(function (i) { return i.id; });
+    return profits.filter(function (p) { return ids.indexOf(p.investmentId) === -1; });
+  }
+
+  // If the name is already used by another item, append " #2", " #3", etc. to keep it unique.
+  function uniqueItemName(baseName, excludeId) {
+    var existingNames = investments.filter(function (i) { return i.id !== excludeId; }).map(function (i) { return i.name; });
+    if (existingNames.indexOf(baseName) === -1) return baseName;
+    var n = 2;
+    while (existingNames.indexOf(baseName + ' #' + n) !== -1) n++;
+    return baseName + ' #' + n;
+  }
+
+  // Strips an auto-appended " #2"/" #3" suffix so the real ticker symbol can still be used for price/earnings/logo lookups.
+  function baseTicker(name) {
+    return String(name || '').replace(/\s#\d+$/, '').trim();
+  }
+
+  // ---------- Actions: investments ----------
+  function addInvestment() {
+    msg.addError = '';
+    if (!newInvDraft.name.trim()) { msg.addError = 'Please enter a name first.'; render(); return; }
+    var item;
+    var uniqueName = uniqueItemName(newInvDraft.name.trim());
+    if (newInvDraft.type === 'stock') {
+      var shares = parseMoney(newInvDraft.shares);
+      var buyPrice = parseMoney(newInvDraft.buyPrice);
+      var price = parseMoney(newInvDraft.price);
+      if (isNaN(shares) || isNaN(buyPrice) || isNaN(price)) { msg.addError = 'Please fill in Shares, Buy Price and Current Price (numbers only).'; render(); return; }
+      item = {
+        id: uid(), type: 'stock', name: uniqueName,
+        shares: shares, buyPrice: buyPrice, principal: shares * buyPrice,
+        price: price, current: shares * price, lastPriceDate: todayStr(),
+        startDate: newInvDraft.startDate || '',
+        optionDays: newInvDraft.optionDays || '',
+        earningsDate: newInvDraft.earningsDate || '',
+        customImage: newInvDraft.customImage || undefined,
+        assetType: newInvDraft.assetType || ''
+      };
+    } else {
+      var principal = parseMoney(newInvDraft.principal);
+      var current = parseMoney(newInvDraft.current);
+      if (isNaN(principal) || isNaN(current)) { msg.addError = 'Please fill in Principal and Current Value (numbers only).'; render(); return; }
+      item = { id: uid(), type: 'general', name: uniqueName, principal: principal, current: current, startDate: newInvDraft.startDate || '', customImage: newInvDraft.customImage || undefined, assetType: newInvDraft.assetType || '' };
+    }
+    investments = investments.concat([item]);
+    persist('investments', investments);
+    var newCfEntry = { id: uid(), name: 'Invested: ' + item.name, amount: -item.principal, date: todayStr(), sourceInvestmentId: item.id, cfType: 'invest-debit' };
+    cashFlows = cashFlows.concat([newCfEntry]);
+    persist('cashFlows', cashFlows);
+    expanded[item.id] = true;
+    selectedCardId = item.id;
+    var keepType = newInvDraft.type;
+    newInvDraft = { type: keepType, name: '', principal: '', current: '', shares: '', price: '', buyPrice: '', startDate: '', optionDays: '', earningsDate: '', customImage: '', assetType: '' };
+    render();
+    scrollToCardDetailsPanel();
+    centerSelectedCard(item.id);
+  }
+
+  function scrollToCardDetailsPanel() {
+    setTimeout(function () {
+      var panel = document.getElementById('cardDetailsPanel');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+
+  function centerSelectedCard(invId) {
+    if (!invId) return;
+    setTimeout(function () {
+      var row = document.querySelector('.card-gallery-row');
+      var wrap = row && row.querySelector('[data-toggle-card-details="' + invId + '"]');
+      var item = wrap && (wrap.querySelector('.stat-card-3d') || wrap);
+      if (!row || !item) return;
+      var rowRect = row.getBoundingClientRect();
+      var itemRect = item.getBoundingClientRect();
+      var itemCenterInScrollContent = (itemRect.left - rowRect.left) + itemRect.width / 2 + row.scrollLeft;
+      var target = itemCenterInScrollContent - row.clientWidth / 2;
+      row.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    }, 340);
+  }
+
+  var customImageTargetId = null;
+
+  function recordImageName(url, filename) {
+    if (!url || !filename) return;
+    imageLibrary = Object.assign({}, imageLibrary);
+    imageLibrary[url] = filename;
+    persist('imageLibrary', imageLibrary);
+  }
+
+  function setCustomImage(invId, dataUrl) {
+    investments = investments.map(function (i) { return i.id === invId ? Object.assign({}, i, { customImage: dataUrl }) : i; });
+    persist('investments', investments);
+  }
+
+  function resizeImageTo300(file) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        img.onload = function () {
+          var SIZE = 300;
+          var canvas = document.createElement('canvas');
+          canvas.width = SIZE;
+          canvas.height = SIZE;
+          var ctx = canvas.getContext('2d');
+          // Cover-fit crop to a square so the image fills the 300x300 frame without distortion
+          var srcSize = Math.min(img.width, img.height);
+          var sx = (img.width - srcSize) / 2;
+          var sy = (img.height - srcSize) / 2;
+          ctx.drawImage(img, sx, sy, srcSize, srcSize, 0, 0, SIZE, SIZE);
+          resolve(canvas.toDataURL('image/jpeg', 0.88));
+        };
+        img.onerror = reject;
+        img.src = ev.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function removeCustomImage(invId) {
+    investments = investments.map(function (i) {
+      if (i.id !== invId) return i;
+      var rest = Object.assign({}, i);
+      delete rest.customImage;
+      return rest;
+    });
+    persist('investments', investments);
+  }
+
+  async function uploadImageToCloud(invId, file, fallbackDataUrl) {
+    recordImageName(fallbackDataUrl, file.name);
+    setCustomImage(invId, fallbackDataUrl); // optimistic local preview while the cloud upload runs
+    try {
+      var base64 = fallbackDataUrl.split(',')[1];
+      var res = await fetch(syncUrl.trim(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'uploadImage', filename: file.name, mimeType: file.type || 'image/png', base64: base64 })
+      });
+      var data = await res.json();
+      if (data && data.ok && data.url) {
+        recordImageName(data.url, file.name);
+        setCustomImage(invId, data.url);
+      } else {
+        msg.error = 'Cloud image upload failed: ' + (data && data.error ? data.error : 'unknown error') + ' (kept the image locally instead)';
+        render();
+      }
+    } catch (e) {
+      msg.error = 'Cloud image upload failed, kept the image locally instead. (Make sure Code.gs was redeployed with the image-upload update.)';
+      render();
+    }
+  }
+
+  // Returns distinct images already used by existing items (active + archived), newest first, so the
+  // user can reuse a previously uploaded picture instead of uploading the same file again.
+  var _uploadedImagesCache = null;
+  var _uploadedImagesCacheKey = null;
+  var _uploadedImagesLibRef = null;
+  function getAllUploadedImages() {
+    if (_uploadedImagesCacheKey === investments && _uploadedImagesLibRef === imageLibrary) return _uploadedImagesCache;
+    var seen = {};
+    var list = [];
+    investments.slice().reverse().forEach(function (i) {
+      if (i.customImage && !seen[i.customImage]) {
+        seen[i.customImage] = true;
+        list.push({ url: i.customImage, name: imageLibrary[i.customImage] || (i.name + ' image') });
+      }
+    });
+    _uploadedImagesCache = list;
+    _uploadedImagesCacheKey = investments;
+    _uploadedImagesLibRef = imageLibrary;
+    return list;
+  }
+
+  async function uploadImageForNewItem(file, dataUrl) {
+    recordImageName(dataUrl, file.name);
+    newInvDraft.customImage = dataUrl; // optimistic local preview
+    render();
+    if (!syncUrl.trim()) return;
+    try {
+      var base64 = dataUrl.split(',')[1];
+      var res = await fetch(syncUrl.trim(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'uploadImage', filename: file.name, mimeType: file.type || 'image/png', base64: base64 })
+      });
+      var data = await res.json();
+      if (data && data.ok && data.url) {
+        recordImageName(data.url, file.name);
+        newInvDraft.customImage = data.url;
+        render();
+      }
+      // On failure, silently keep the local dataUrl preview — it will still be saved with the new item.
+    } catch (e) {
+      // Same fallback: keep the local dataUrl.
+    }
+  }
+
+  function archiveInvestment(id) {
+    var item = investments.find(function (i) { return i.id === id; });
+    investments = investments.map(function (i) { return i.id === id ? Object.assign({}, i, { archived: true, archivedDate: todayStr() }) : i; });
+    persist('investments', investments);
+    if (item) {
+      var transferAmount = item.current + profitSumFor(id);
+      var cfEntry = { id: uid(), name: 'Archived: ' + item.name, amount: transferAmount, date: todayStr(), sourceInvestmentId: id, cfType: 'archive-credit' };
+      cashFlows = cashFlows.concat([cfEntry]);
+      persist('cashFlows', cashFlows);
+    }
+  }
+
+  function restoreInvestment(id) {
+    investments = investments.map(function (i) {
+      if (i.id !== id) return i;
+      var rest = Object.assign({}, i);
+      delete rest.archived;
+      delete rest.archivedDate;
+      return rest;
+    });
+    persist('investments', investments);
+    var hadCashFlowEntry = cashFlows.some(function (c) { return c.sourceInvestmentId === id && c.cfType === 'archive-credit'; });
+    if (hadCashFlowEntry) {
+      cashFlows = cashFlows.filter(function (c) { return !(c.sourceInvestmentId === id && c.cfType === 'archive-credit'); });
+      persist('cashFlows', cashFlows);
+    }
+  }
+
+  function deleteInvestmentPermanently(id) {
+    investments = investments.filter(function (i) { return i.id !== id; });
+    persist('investments', investments);
+  }
+
+  function startEditInvestment(id) {
+    var inv = investments.find(function (i) { return i.id === id; });
+    if (!inv) return;
+    editingInvId = id;
+    selectedCardId = id;
+    editDraft = {
+      type: inv.type || 'general',
+      name: inv.name,
+      principal: String(inv.principal),
+      current: String(inv.current),
+      shares: inv.shares != null ? String(inv.shares) : '',
+      price: inv.price != null ? String(inv.price) : '',
+      buyPrice: inv.buyPrice != null ? String(inv.buyPrice) : '',
+      startDate: inv.startDate || '',
+      optionDays: inv.optionDays || '',
+      earningsDate: inv.earningsDate || '',
+      assetType: inv.assetType || ''
+    };
+    render();
+    scrollToCardDetailsPanel();
+    centerSelectedCard(id);
+  }
+
+  function cancelEditInvestment() {
+    editingInvId = null;
+    editDraft = {};
+    render();
+  }
+
+  function saveEditInvestment(id) {
+    if (!editDraft.name || !editDraft.name.trim()) return;
+    var updated;
+    var uniqueEditName = uniqueItemName(editDraft.name.trim(), id);
+    var existing = investments.find(function (i) { return i.id === id; }) || {};
+    if (editDraft.type === 'stock') {
+      var shares = parseMoney(editDraft.shares);
+      var buyPrice = parseMoney(editDraft.buyPrice);
+      var price = parseMoney(editDraft.price);
+      if (isNaN(shares) || isNaN(buyPrice) || isNaN(price)) return;
+      updated = {
+        id: id, type: 'stock', name: uniqueEditName,
+        shares: shares, buyPrice: buyPrice, principal: shares * buyPrice,
+        price: price, current: shares * price, lastPriceDate: todayStr(),
+        startDate: editDraft.startDate || '',
+        optionDays: editDraft.optionDays || '',
+        earningsDate: editDraft.earningsDate || '',
+        prevClose: existing.prevClose,
+        lastPriceTimestamp: existing.lastPriceTimestamp,
+        customImage: existing.customImage,
+        assetType: editDraft.assetType || ''
+      };
+    } else {
+      var principal = parseMoney(editDraft.principal);
+      var current = parseMoney(editDraft.current);
+      if (isNaN(principal) || isNaN(current)) return;
+      updated = { id: id, type: 'general', name: uniqueEditName, principal: principal, current: current, startDate: editDraft.startDate || '', customImage: existing.customImage, assetType: editDraft.assetType || '' };
+    }
+    investments = investments.map(function (i) { return i.id === id ? updated : i; });
+    persist('investments', investments);
+    editingInvId = null;
+    editDraft = {};
+    render();
+  }
+
+  function toggleExpanded(id) { expanded[id] = !expanded[id]; render(); }
+
+  // ---------- Actions: profits ----------
+  function getDraft(invId) { return profitDrafts[invId] || { name: '', amount: '' }; }
+
+  function addProfit(invId) {
+    var draft = getDraft(invId);
+    var amount = parseMoney(draft.amount);
+    if (!draft.name || !draft.name.trim() || isNaN(amount)) return;
+    var item = { id: uid(), investmentId: invId, name: draft.name.trim(), amount: amount, date: todayStr() };
+    profits = profits.concat([item]);
+    persist('profits', profits);
+    profitDrafts[invId] = { name: '', amount: '' };
+    render();
+  }
+
+  function removeProfit(id) {
+    profits = profits.filter(function (p) { return p.id !== id; });
+    persist('profits', profits);
+  }
+
+  function startEditProfit(id) {
+    var p = profits.find(function (x) { return x.id === id; });
+    if (!p) return;
+    editingProfitId = id;
+    editProfitDraft = { name: p.name, amount: String(p.amount) };
+    render();
+  }
+
+  function cancelEditProfit() {
+    editingProfitId = null;
+    editProfitDraft = {};
+    render();
+  }
+
+  function saveEditProfit(id) {
+    var amount = parseMoney(editProfitDraft.amount);
+    if (!editProfitDraft.name || !editProfitDraft.name.trim() || isNaN(amount)) return;
+    profits = profits.map(function (p) {
+      return p.id === id ? Object.assign({}, p, { name: editProfitDraft.name.trim(), amount: amount }) : p;
+    });
+    persist('profits', profits);
+    editingProfitId = null;
+    editProfitDraft = {};
+    render();
+  }
+
+  // ---------- Live price ----------
+  function tickUpdatedAgoLabels() {
+    var now = Date.now();
+    document.querySelectorAll('.updated-ago-label').forEach(function (el) {
+      var ts = parseInt(el.getAttribute('data-updated-ts'), 10);
+      if (!ts) return;
+      var secsAgo = Math.max(0, Math.floor((now - ts) / 1000));
+      var agoText = secsAgo < 60 ? (secsAgo + 's ago') : (Math.floor(secsAgo / 60) + 'm ago');
+      el.textContent = 'updated ' + agoText;
+    });
+  }
+
+  function todayStr() {
+    var d = new Date();
+    var yyyy = d.getFullYear();
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return yyyy + '-' + mm + '-' + dd;
+  }
+
+  async function fetchStockPriceViaFinnhub(ticker) {
+    var url = 'https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(ticker.toUpperCase()) + '&token=' + encodeURIComponent(finnhubApiKey);
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+    var res;
+    try {
+      res = await fetch(url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    if (!res.ok) throw new Error('fetch failed');
+    var data = await res.json();
+    if (!data || data.c == null || data.c === 0) throw new Error('no price');
+    return { price: data.c, prevClose: data.pc != null ? data.pc : data.c };
+  }
+
+  async function fetchStockPriceViaStooq(ticker) {
+    var sym = ticker.indexOf('.') === -1 ? ticker.toLowerCase() + '.us' : ticker.toLowerCase();
+    var end = new Date();
+    var start = new Date(end.getTime() - 14 * 86400000);
+    function fmt8(d) { return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
+    var target = 'https://stooq.com/q/d/l/?s=' + encodeURIComponent(sym) + '&d1=' + fmt8(start) + '&d2=' + fmt8(end) + '&i=d';
+    var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(target);
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+    var res;
+    try {
+      res = await fetch(proxied, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    if (!res.ok) throw new Error('fetch failed');
+    var text = await res.text();
+    var rows = text.trim().split('\n').filter(Boolean).slice(1); // drop header row
+    if (rows.length === 0) throw new Error('no data');
+    var lastCols = rows[rows.length - 1].split(',');
+    var price = parseFloat(lastCols[4]); // Date,Open,High,Low,Close,Volume
+    var prevClose = price;
+    if (rows.length >= 2) {
+      var prevCols = rows[rows.length - 2].split(',');
+      var parsedPrev = parseFloat(prevCols[4]);
+      if (!isNaN(parsedPrev)) prevClose = parsedPrev;
+    }
+    if (isNaN(price)) throw new Error('no price');
+    return { price: price, prevClose: prevClose };
+  }
+
+  async function fetchStockPrice(ticker) {
+    if (finnhubApiKey.trim()) {
+      try {
+        return await fetchStockPriceViaFinnhub(ticker);
+      } catch (e) {
+        // fall through to Stooq if Finnhub fails (bad key, rate limit, unsupported symbol, etc.)
+      }
+    }
+    return await fetchStockPriceViaStooq(ticker);
+  }
+
+  async function fetchEarningsDateViaFinnhub(ticker) {
+    var today = new Date();
+    var future = new Date(today.getTime() + 400 * 86400000);
+    function fmt10(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    var url = 'https://finnhub.io/api/v1/calendar/earnings?from=' + fmt10(today) + '&to=' + fmt10(future) + '&symbol=' + encodeURIComponent(ticker.toUpperCase()) + '&token=' + encodeURIComponent(finnhubApiKey);
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+    var res;
+    try {
+      res = await fetch(url, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    if (!res.ok) throw new Error('fetch failed');
+    var data = await res.json();
+    var list = data && data.earningsCalendar;
+    if (!list || !list.length) throw new Error('no earnings date');
+    return list[0].date;
+  }
+
+  async function fetchEarningsDateViaYahoo(ticker) {
+    var target = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/' + encodeURIComponent(ticker) + '?modules=calendarEvents';
+    var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(target);
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+    var res;
+    try {
+      res = await fetch(proxied, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+    if (!res.ok) throw new Error('fetch failed');
+    var data = await res.json();
+    var result = data && data.quoteSummary && data.quoteSummary.result && data.quoteSummary.result[0];
+    var earningsDates = result && result.calendarEvents && result.calendarEvents.earnings && result.calendarEvents.earnings.earningsDate;
+    var raw = earningsDates && earningsDates[0] && earningsDates[0].raw;
+    if (!raw) throw new Error('no earnings date');
+    var d = new Date(raw * 1000);
+    var yyyy = d.getUTCFullYear();
+    var mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    var dd = String(d.getUTCDate()).padStart(2, '0');
+    return yyyy + '-' + mm + '-' + dd;
+  }
+
+  async function fetchEarningsDate(ticker) {
+    if (finnhubApiKey.trim()) {
+      try {
+        return await fetchEarningsDateViaFinnhub(ticker);
+      } catch (e) {
+        // fall through to Yahoo if Finnhub fails or has no data for this symbol
+      }
+    }
+    return await fetchEarningsDateViaYahoo(ticker);
+  }
+
+  var autoRefreshing = false;
+
+  var PRICE_REFRESH_INTERVAL_MS = 300000; // refresh any stock price older than this (5 minutes)
+
+  async function refreshStockList(list) {
+    if (list.length === 0) return;
+    autoRefreshing = true; render();
+    var results = await Promise.allSettled(list.map(function (inv) {
+      return fetchStockPrice(baseTicker(inv.name)).then(function (r) { return { id: inv.id, price: r.price, prevClose: r.prevClose }; });
+    }));
+    results.forEach(function (r) {
+      if (r.status === 'fulfilled') {
+        var upd = r.value;
+        investments = investments.map(function (i) {
+          return i.id === upd.id ? Object.assign({}, i, { price: upd.price, prevClose: upd.prevClose, current: i.shares * upd.price, lastPriceDate: todayStr(), lastPriceTimestamp: Date.now() }) : i;
+        });
+      }
+      // rejected items are left as-is; they will be retried on the next refresh cycle
+    });
+    persist('investments', investments);
+    autoRefreshing = false;
+    render();
+  }
+
+  async function autoRefreshStockPrices() {
+    var now = Date.now();
+    // Allow 15s of slack: a price stamped just after the previous tick would otherwise be "4m59s old" at the
+    // next tick and get skipped, silently stretching the 5-minute refresh to 10 minutes.
+    var staleAfter = PRICE_REFRESH_INTERVAL_MS - 15000;
+    var stale = activeInvestments().filter(function (i) {
+      return i.type === 'stock' && (!i.lastPriceTimestamp || now - i.lastPriceTimestamp >= staleAfter);
+    });
+    await refreshStockList(stale);
+  }
+
+  async function updateAllPrices() {
+    var allStocks = activeInvestments().filter(function (i) { return i.type === 'stock'; });
+    await refreshStockList(allStocks);
+  }
+
+  async function handleFetchPrice() {
+    if (!newInvDraft.name.trim()) return;
+    priceFetching = true; msg.priceError = ''; render();
+    try {
+      var r = await fetchStockPrice(baseTicker(newInvDraft.name.trim()));
+      newInvDraft.price = String(r.price);
+    } catch (e) {
+      msg.priceError = 'Could not fetch live price, please enter the share price manually';
+    } finally {
+      priceFetching = false; render();
+    }
+  }
+
+  var earningsFetching = false;
+
+  async function handleFetchEarnings() {
+    if (!newInvDraft.name.trim()) return;
+    earningsFetching = true; msg.earningsError = ''; render();
+    try {
+      newInvDraft.earningsDate = await fetchEarningsDate(baseTicker(newInvDraft.name.trim()));
+    } catch (e) {
+      msg.earningsError = 'Could not fetch earnings date, please enter it manually';
+    } finally {
+      earningsFetching = false; render();
+    }
+  }
+
+  var editEarningsFetching = false;
+
+  async function handleFetchEditEarnings() {
+    if (!editDraft.name || !editDraft.name.trim()) return;
+    editEarningsFetching = true; msg.earningsError = ''; render();
+    try {
+      editDraft.earningsDate = await fetchEarningsDate(baseTicker(editDraft.name.trim()));
+    } catch (e) {
+      msg.earningsError = 'Could not fetch earnings date, please enter it manually';
+    } finally {
+      editEarningsFetching = false; render();
+    }
+  }
+
+  async function refreshInvestmentPrice(invId) {
+    var inv = investments.find(function (i) { return i.id === invId; });
+    if (!inv) return;
+    refreshingId = invId; msg.priceError = ''; render();
+    try {
+      var r = await fetchStockPrice(baseTicker(inv.name));
+      investments = investments.map(function (i) {
+        return i.id === invId ? Object.assign({}, i, { price: r.price, prevClose: r.prevClose, current: i.shares * r.price, lastPriceDate: todayStr(), lastPriceTimestamp: Date.now() }) : i;
+      });
+      persist('investments', investments);
+    } catch (e) {
+      msg.priceError = 'Could not update "' + inv.name + '" market price, please enter it manually';
+    } finally {
+      refreshingId = null; render();
+    }
+  }
+
+  // ---------- Backup export/import ----------
+  function exportBackup() {
+    var payload = JSON.stringify({
+      investments: investments,
+      profits: profits,
+      cashFlows: cashFlows,
+      marginAccounts: marginAccounts,
+      bankTransfers: bankTransfers,
+      customTotalPrincipal: customTotalPrincipal,
+      exportedAt: new Date().toISOString()
+    }, null, 2);
+    var blob = new Blob([payload], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'investment-stats-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportFile(file) {
+    if (!file) return;
+    msg.importError = ''; msg.importOk = '';
+    var reader = new FileReader();
+    reader.onload = function (evt) {
+      try {
+        var data = JSON.parse(evt.target.result);
+        if (!Array.isArray(data.investments) || !Array.isArray(data.profits)) throw new Error('bad');
+        investments = data.investments;
+        profits = data.profits;
+        cashFlows = Array.isArray(data.cashFlows) ? data.cashFlows : [];
+        marginAccounts = Array.isArray(data.marginAccounts) ? data.marginAccounts : [];
+        customTotalPrincipal = typeof data.customTotalPrincipal === 'string' ? data.customTotalPrincipal : (data.customTotalPrincipal != null ? String(data.customTotalPrincipal) : '');
+        if (Array.isArray(data.bankTransfers)) bankTransfers = data.bankTransfers;
+        persist('investments', investments);
+        persist('profits', profits);
+        persist('bankTransfers', bankTransfers);
+        persist('cashFlows', cashFlows);
+        persist('marginAccounts', marginAccounts);
+        persist('customTotalPrincipal', customTotalPrincipal);
+        msg.importOk = 'Backup restored';
+      } catch (e) {
+        msg.importError = 'Invalid backup file — please make sure it was exported by this app';
+      }
+      render();
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------- Cloud sync ----------
+  function saveSyncUrl() {
+    persist('syncUrl', syncUrl.trim());
+    syncUrlEditing = false;
+    msg.syncStatus = 'Sync URL saved';
+    msg.syncError = '';
+    render();
+  }
+
+  function saveFinnhubKey() {
+    persist('finnhubApiKey', finnhubApiKey.trim());
+    finnhubKeyEditing = false;
+    render();
+  }
+
+  function editFinnhubKey() {
+    finnhubKeyEditing = true;
+    render();
+  }
+
+  function saveCustomTotalPrincipal() {
+    persist('customTotalPrincipal', customTotalPrincipal.trim());
+    customPrincipalEditing = false;
+    render();
+  }
+
+  function editCustomTotalPrincipal() {
+    customPrincipalEditing = true;
+    render();
+  }
+
+  function addCashFlow() {
+    var amount = parseMoney(cashFlowDraft.amount);
+    if (!cashFlowDraft.name.trim() || isNaN(amount)) return;
+    var finalAmount = cashFlowDraft.kind === 'Withdraw' ? amount * 4 : amount;
+    var item = { id: uid(), name: cashFlowDraft.name.trim(), amount: finalAmount, originalAmount: amount, date: cashFlowDraft.date || todayStr(), kind: cashFlowDraft.kind };
+    cashFlows = cashFlows.concat([item]);
+    persist('cashFlows', cashFlows);
+    cashFlowDraft = { name: '', amount: '', date: '', kind: 'CF' };
+    render();
+  }
+
+  function removeCashFlow(id) {
+    cashFlows = cashFlows.filter(function (c) { return c.id !== id; });
+    persist('cashFlows', cashFlows);
+  }
+
+  var editingCashFlowId = null;
+  var editCashFlowDraft = {};
+
+  function startEditCashFlow(id) {
+    var c = cashFlows.find(function (x) { return x.id === id; });
+    if (!c) return;
+    editingCashFlowId = id;
+    editCashFlowDraft = {
+      name: c.name,
+      amount: String(c.kind === 'Withdraw' && c.originalAmount != null ? c.originalAmount : c.amount),
+      date: c.date || '',
+      kind: c.kind || 'CF'
+    };
+    render();
+  }
+
+  function cancelEditCashFlow() {
+    editingCashFlowId = null;
+    editCashFlowDraft = {};
+    render();
+  }
+
+  function saveEditCashFlow(id) {
+    var amount = parseMoney(editCashFlowDraft.amount);
+    if (!editCashFlowDraft.name || !editCashFlowDraft.name.trim() || isNaN(amount)) return;
+    var finalAmount = editCashFlowDraft.kind === 'Withdraw' ? amount * 4 : amount;
+    cashFlows = cashFlows.map(function (c) {
+      if (c.id !== id) return c;
+      return { id: c.id, name: editCashFlowDraft.name.trim(), amount: finalAmount, originalAmount: amount, date: editCashFlowDraft.date || todayStr(), kind: editCashFlowDraft.kind, sourceInvestmentId: c.sourceInvestmentId, cfType: c.cfType };
+    });
+    persist('cashFlows', cashFlows);
+    editingCashFlowId = null;
+    editCashFlowDraft = {};
+    render();
+  }
+
+  function totalCashFlow() {
+    return cashFlows.reduce(function (s, c) { return s + c.amount; }, 0);
+  }
+
+  // ---------- Bank transfers (principal contributions) ----------
+  // Extra fees (wire / FX / etc.) are tracked next to each transfer but are NOT part of the principal amount.
+  function bankTransferTotals() {
+    var t = { amount: 0, fee: 0, byInvestor: [] };
+    var idx = {};
+    bankTransfers.forEach(function (b) {
+      var a = parseMoney(b.amount) || 0;
+      var f = parseMoney(b.fee) || 0;
+      var shown = String(b.investor || '').trim() || '(no investor)';
+      var key = shown.toLowerCase();
+      t.amount += a;
+      t.fee += f;
+      if (!idx[key]) { idx[key] = { name: shown, amount: 0, fee: 0, count: 0 }; t.byInvestor.push(idx[key]); }
+      idx[key].amount += a;
+      idx[key].fee += f;
+      idx[key].count += 1;
+    });
+    t.byInvestor.sort(function (x, y) { return y.amount - x.amount; });
+    t.net = t.amount - t.fee;   // fee comes OUT of the transfer: this is what actually reaches the principal
+    return t;
+  }
+
+  // Principal used by the Custom Total Principal panel and margin hints: the manually entered figure if there
+  // is one, otherwise the net of all Bank Transfers (amount minus fees). NaN when neither exists.
+  function effectivePrincipal() {
+    var net = bankTransferTotals().net;
+    return net > 0 ? net : NaN;
+  }
+
+  // Returns { value } on success or { error } naming exactly which field is wrong (and what was typed).
+  function parseBankTransferDraft(d) {
+    var problems = [];
+    var investor = String(d.investor || '').trim();
+    var amountRaw = String(d.amount == null ? '' : d.amount).trim();
+    var feeRaw = String(d.fee == null ? '' : d.fee).trim();
+    var amount = parseMoney(amountRaw);
+    var fee = feeRaw === '' ? 0 : parseMoney(feeRaw);
+    if (!investor) problems.push('Investor is required.');
+    if (amountRaw === '') problems.push('Amount is required.');
+    else if (isNaN(amount)) problems.push('Amount "' + amountRaw + '" is not a valid number.');
+    if (isNaN(fee)) problems.push('Extra Fee "' + feeRaw + '" is not a valid number (leave it blank if none).');
+    if (problems.length) return { error: problems.join(' ') };
+    return { value: { date: d.date || todayStr(), investor: investor, amount: amount, fee: fee, note: String(d.note || '').trim() } };
+  }
+
+  function addBankTransfer() {
+    msg.bankError = '';
+    var result = parseBankTransferDraft(bankTransferDraft);
+    if (result.error) { msg.bankError = result.error; render(); return; }
+    var parsed = result.value;
+    parsed.id = uid();
+    bankTransfers = bankTransfers.concat([parsed]);
+    persist('bankTransfers', bankTransfers);
+    bankTransferDraft = { date: '', investor: '', amount: '', fee: '', note: '' };
+    render();
+  }
+
+  function removeBankTransfer(id) {
+    bankTransfers = bankTransfers.filter(function (b) { return b.id !== id; });
+    persist('bankTransfers', bankTransfers);
+  }
+
+  function startEditBankTransfer(id) {
+    var b = bankTransfers.find(function (x) { return x.id === id; });
+    if (!b) return;
+    editingBankTransferId = id;
+    editBankTransferDraft = {
+      date: b.date || '',
+      investor: b.investor || '',
+      amount: String(b.amount),
+      fee: b.fee ? String(b.fee) : '',
+      note: b.note || ''
+    };
+    render();
+  }
+
+  function cancelEditBankTransfer() {
+    editingBankTransferId = null;
+    editBankTransferDraft = {};
+    msg.bankError = '';
+    render();
+  }
+
+  function saveEditBankTransfer(id) {
+    var result = parseBankTransferDraft(editBankTransferDraft);
+    if (result.error) { msg.bankError = result.error; render(); return; }
+    var parsed = result.value;
+    msg.bankError = '';
+    bankTransfers = bankTransfers.map(function (b) { return b.id === id ? Object.assign({}, b, parsed) : b; });
+    persist('bankTransfers', bankTransfers);
+    editingBankTransferId = null;
+    editBankTransferDraft = {};
+    render();
+  }
+
+  function addMarginAccount() {
+    if (!newAccountDraft.name.trim()) return;
+    var principal = parseMoney(newAccountDraft.principal);
+    if (isNaN(principal)) return;
+    var acct = { id: uid(), name: newAccountDraft.name.trim(), principal: principal, ratio: newAccountDraft.ratio || 100 };
+    marginAccounts = marginAccounts.concat([acct]);
+    persist('marginAccounts', marginAccounts);
+    newAccountDraft = { name: '', principal: '', ratio: 100 };
+    render();
+  }
+
+  function removeMarginAccount(id) {
+    marginAccounts = marginAccounts.filter(function (a) { return a.id !== id; });
+    persist('marginAccounts', marginAccounts);
+  }
+
+  // A ratio of 0 is valid (no margin); only a missing/invalid value falls back to 100.
+  function ratioOf(a) {
+    var r = parseMoney(a && a.ratio);
+    return isNaN(r) ? 100 : r;
+  }
+
+  function setMarginAccountRatio(id, ratio) {
+    marginAccounts = marginAccounts.map(function (a) { return a.id === id ? Object.assign({}, a, { ratio: ratio }) : a; });
+    persist('marginAccounts', marginAccounts);
+  }
+
+  function startEditMarginAccount(id) {
+    var a = marginAccounts.find(function (x) { return x.id === id; });
+    if (!a) return;
+    editingAccountId = id;
+    editAccountDraft = { name: a.name, principal: String(a.principal) };
+    render();
+  }
+
+  function cancelEditMarginAccount() {
+    editingAccountId = null;
+    editAccountDraft = {};
+    render();
+  }
+
+  function saveEditMarginAccount(id) {
+    var principal = parseMoney(editAccountDraft.principal);
+    if (!editAccountDraft.name || !editAccountDraft.name.trim() || isNaN(principal)) return;
+    marginAccounts = marginAccounts.map(function (a) { return a.id === id ? Object.assign({}, a, { name: editAccountDraft.name.trim(), principal: principal }) : a; });
+    persist('marginAccounts', marginAccounts);
+    editingAccountId = null;
+    editAccountDraft = {};
+    render();
+  }
+
+  function editSyncUrl() {
+    syncUrlEditing = true;
+    msg.syncStatus = '';
+    render();
+  }
+
+  async function pushToCloud() {
+    if (!syncUrl.trim()) { msg.syncError = 'Please paste and save the cloud sync URL first'; render(); return; }
+    // Safety: pushing an empty local state (e.g. fresh browser / cleared storage) would overwrite the cloud copy.
+    if (investments.length === 0 && profits.length === 0 && cashFlows.length === 0 && marginAccounts.length === 0 && bankTransfers.length === 0) {
+      if (!confirm('This browser has no local data. Syncing now will overwrite the cloud copy with an empty dataset.\n\nTo load your cloud data instead, use "Restore from Cloud".\n\nOverwrite the cloud anyway?')) return;
+    }
+    syncing = true; msg.syncError = ''; msg.syncStatus = ''; render();
+    var body = JSON.stringify({
+      investments: investments,
+      profits: profits,
+      cashFlows: cashFlows,
+      marginAccounts: marginAccounts,
+      bankTransfers: bankTransfers,
+      customTotalPrincipal: customTotalPrincipal
+    });
+    try {
+      var res = await fetch(syncUrl.trim(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: body
+      });
+      var data = await res.json();
+      // The server answered and said it failed: report that, don't fall through to the optimistic no-cors retry below.
+      if (data && data.ok === false) {
+        msg.syncError = 'Sync failed on the server: ' + (data.error || 'unknown error');
+        return;
+      }
+      if (!data || data.ok !== true) throw new Error('sync failed');
+      msg.syncStatus = 'Synced to the Google Sheet';
+    } catch (e) {
+      // Google Apps Script often doesn't send back CORS headers the browser can read, even when
+      // the write itself succeeded server-side. Retry once in no-cors mode: we can't read the
+      // response, but if the request completes without a network error the data almost certainly
+      // made it through, so we report success optimistically instead of a false "failed" alarm.
+      try {
+        await fetch(syncUrl.trim(), {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: body
+        });
+        msg.syncStatus = 'Synced to the Google Sheet (unconfirmed — Apps Script did not return a readable response, but the data was sent)';
+      } catch (e2) {
+        msg.syncError = 'Sync failed — check the URL and that deployment access is set to "Anyone"';
+      }
+    } finally {
+      syncing = false; render();
+    }
+  }
+
+  async function pullFromCloud() {
+    if (!syncUrl.trim()) { msg.syncError = 'Please paste and save the cloud sync URL first'; render(); return; }
+    syncing = true; msg.syncError = ''; msg.syncStatus = ''; render();
+    try {
+      var bustUrl = syncUrl.trim() + (syncUrl.indexOf('?') === -1 ? '?' : '&') + '_t=' + Date.now();
+      var res = await fetch(bustUrl, { cache: 'no-store' });
+      var data = await res.json();
+      if (!Array.isArray(data.investments) || !Array.isArray(data.profits)) throw new Error('bad payload');
+      // Safety: don't silently replace local data with an empty cloud sheet.
+      var cloudIsEmpty = data.investments.length === 0 && data.profits.length === 0 &&
+        !(Array.isArray(data.bankTransfers) && data.bankTransfers.length > 0) &&
+        !(Array.isArray(data.cashFlows) && data.cashFlows.length > 0);
+      if (cloudIsEmpty && (investments.length > 0 || profits.length > 0 || bankTransfers.length > 0 || cashFlows.length > 0)) {
+        if (!confirm('The cloud copy is empty, but this browser has data. Restoring will erase your local data.\n\nRestore anyway?')) {
+          msg.syncStatus = 'Restore cancelled — local data kept';
+          return;
+        }
+      }
+      investments = data.investments;
+      profits = data.profits;
+      cashFlows = Array.isArray(data.cashFlows) ? data.cashFlows : [];
+      marginAccounts = Array.isArray(data.marginAccounts) ? data.marginAccounts : [];
+      customTotalPrincipal = typeof data.customTotalPrincipal === 'string' ? data.customTotalPrincipal : (data.customTotalPrincipal != null ? String(data.customTotalPrincipal) : '');
+      if (Array.isArray(data.bankTransfers)) bankTransfers = data.bankTransfers;
+      persist('investments', investments);
+      persist('profits', profits);
+      persist('bankTransfers', bankTransfers);
+      persist('cashFlows', cashFlows);
+      persist('marginAccounts', marginAccounts);
+      persist('customTotalPrincipal', customTotalPrincipal);
+      msg.syncStatus = 'Restored from the Google Sheet';
+    } catch (e) {
+      msg.syncError = 'Restore failed — check the URL and that the sheet has synced data';
+    } finally {
+      syncing = false; render();
+    }
+  }
+
+  // ---------- Chart ----------
+  if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+    Chart.register(ChartDataLabels);
+  }
+  var chartInstance = null;
+  var chartContainerEl = null; // persistent <canvas>+y-labels wrapper, survives across render() calls
+  var lastChartSignature = null; // skip rebuilding chart datasets when the underlying data hasn't changed
+
+  function getChartContainerEl() {
+    if (!chartContainerEl) {
+      chartContainerEl = document.createElement('div');
+      chartContainerEl.style.width = '100%';
+      chartContainerEl.style.height = '100%';
+      chartContainerEl.style.position = 'relative';
+      chartContainerEl.innerHTML = '<canvas id="invChart"></canvas><div id="chartYLabels" class="chart-y-labels"></div>';
+    }
+    return chartContainerEl;
+  }
+  var chartScaleType = 'logarithmic';
+
+  function toggleChartScale() {
+    chartScaleType = chartScaleType === 'linear' ? 'logarithmic' : 'linear';
+    renderChart();
+    var btn = document.getElementById('btnScaleToggle');
+    if (btn) btn.textContent = chartScaleType === 'linear' ? 'Log Scale' : 'Linear Scale';
+  }
+
+  function externalTooltipHandler(context) {
+    var box = document.getElementById('chartTooltipBox');
+    if (!box) return;
+    var tooltipModel = context.tooltip;
+    if (!tooltipModel || tooltipModel.opacity === 0 || !tooltipModel.dataPoints || tooltipModel.dataPoints.length === 0) {
+      box.textContent = 'Hover a bar to see details';
+      box.className = 'chart-tooltip-box';
+      return;
+    }
+    var idx = tooltipModel.dataPoints[0].dataIndex;
+    var inv = sortedActiveInvestments()[idx];
+    if (!inv) return;
+    var diff = inv.current - inv.principal;
+    var itemProfit = profitSumFor(inv.id);
+    box.innerHTML =
+      '<strong>' + esc(inv.name) + '</strong> &middot; Principal: ' + fmt(inv.principal) +
+      ' &middot; Current: ' + fmt(inv.current) +
+      ' &middot; P/L: <span style="color:' + (diff >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(diff) + '</span>' +
+      ' &middot; Accumulated Profit: <span style="color:#E8C468">' + fmt(itemProfit) + '</span>';
+    box.className = 'chart-tooltip-box active';
+  }
+
+  function shadeColor(hex, percent) {
+    if (!hex || typeof hex !== 'string' || hex[0] !== '#') return hex;
+    var num = parseInt(hex.slice(1, 7), 16);
+    var amt = Math.round(2.55 * percent);
+    var R = (num >> 16) + amt;
+    var G = (num >> 8 & 0x00FF) + amt;
+    var B = (num & 0x0000FF) + amt;
+    R = Math.max(Math.min(255, R), 0);
+    G = Math.max(Math.min(255, G), 0);
+    B = Math.max(Math.min(255, B), 0);
+    return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+  }
+
+  function make3DDotStyle(hex) {
+    var light = shadeColor(hex, 45);
+    var dark = shadeColor(hex, -35);
+    return 'background: linear-gradient(135deg, ' + light + ', ' + hex + ' 55%, ' + dark + ' 100%);' +
+      'box-shadow: inset -2px -2px 3px rgba(0,0,0,0.35), inset 1px 1px 2px rgba(255,255,255,0.5), 0 2px 5px rgba(0,0,0,0.35);';
+  }
+
+  var axis3DPlugin = {
+    id: 'axis3D',
+    beforeDatasetsDraw: function (chart) {
+      var ctx = chart.ctx;
+      var area = chart.chartArea;
+      var dx = 8, dy = -8;
+
+      ctx.save();
+
+      // Floor plane
+      ctx.beginPath();
+      ctx.moveTo(area.left, area.bottom);
+      ctx.lineTo(area.right, area.bottom);
+      ctx.lineTo(area.right + dx, area.bottom + dy);
+      ctx.lineTo(area.left + dx, area.bottom + dy);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(74, 222, 128, 0.07)';
+      ctx.shadowColor = 'rgba(74, 222, 128, 0.35)';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.45)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Left wall plane
+      ctx.beginPath();
+      ctx.moveTo(area.left, area.top);
+      ctx.lineTo(area.left, area.bottom);
+      ctx.lineTo(area.left + dx, area.bottom + dy);
+      ctx.lineTo(area.left + dx, area.top + dy);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(74, 222, 128, 0.04)';
+      ctx.shadowBlur = 0;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.3)';
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  };
+
+  var yLabelSyncPlugin = {
+    id: 'yLabelSync',
+    afterLayout: function (chart) {
+      var container = document.getElementById('chartYLabels');
+      if (!container) return;
+      var yScale = chart.scales.y;
+      if (!yScale) return;
+      var labels = chart.data.labels || [];
+      var html = '';
+      labels.forEach(function (label, idx) {
+        var y = yScale.getPixelForTick(idx);
+        html += '<div class="chart-y-badge" style="top:' + y + 'px;max-width:' + (yScale.width - 6) + 'px">' + esc(label) + '</div>';
+      });
+      container.innerHTML = html;
+    }
+  };
+
+  var bar3DPlugin = {
+    id: 'bar3D',
+    z: -1,
+    afterDatasetsDraw: function (chart) {
+      var ctx = chart.ctx;
+      var dx = 4, dy = -4;
+      chart.data.datasets.forEach(function (dataset, dIdx) {
+        var meta = chart.getDatasetMeta(dIdx);
+        if (!meta || meta.hidden || !meta.data) return;
+        meta.data.forEach(function (bar, idx) {
+          var color = Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor[idx] : dataset.backgroundColor;
+          if (!color || typeof color !== 'string' || color[0] !== '#') return;
+          var x = bar.x, y = bar.y, base = bar.base, height = bar.height;
+          var left = Math.min(base, x), right = Math.max(base, x);
+          var top = y - height / 2, bottom = y + height / 2;
+          if (right - left < 1) return;
+          var sideColor = shadeColor(color, -30);
+          var topColor = shadeColor(color, 25);
+          var glowColor = shadeColor(color, 45);
+
+          ctx.save();
+
+          // Soft grounding shadow beneath the bar for depth
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.5)';
+          ctx.shadowBlur = 8;
+          ctx.shadowOffsetY = 3;
+          ctx.fillStyle = 'rgba(0,0,0,0.001)';
+          ctx.fillRect(left, top, right - left, bottom - top);
+          ctx.restore();
+
+          // Side face (right cap)
+          ctx.beginPath();
+          ctx.moveTo(right, top);
+          ctx.lineTo(right, bottom);
+          ctx.lineTo(right + dx, bottom + dy);
+          ctx.lineTo(right + dx, top + dy);
+          ctx.closePath();
+          ctx.fillStyle = sideColor;
+          ctx.fill();
+          ctx.shadowColor = glowColor;
+          ctx.shadowBlur = 4;
+          ctx.strokeStyle = glowColor;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Top face
+          ctx.beginPath();
+          ctx.moveTo(left, top);
+          ctx.lineTo(right, top);
+          ctx.lineTo(right + dx, top + dy);
+          ctx.lineTo(left + dx, top + dy);
+          ctx.closePath();
+          ctx.globalAlpha = 0.45;
+          ctx.fillStyle = topColor;
+          ctx.fill();
+          ctx.shadowColor = glowColor;
+          ctx.shadowBlur = 3;
+          ctx.strokeStyle = glowColor;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+
+          // Front-face texture: a subtle grid of small square blocks (gap lines only, no per-block shading)
+          var blockSize = 8, gapW = 1;
+          ctx.save();
+          ctx.fillStyle = 'rgba(255,255,255,0.22)';
+          for (var gx = left + blockSize; gx < right; gx += blockSize) {
+            ctx.fillRect(gx - gapW / 2, top, gapW, bottom - top);
+          }
+          for (var gy = top + blockSize; gy < bottom; gy += blockSize) {
+            ctx.fillRect(left, gy - gapW / 2, right - left, gapW);
+          }
+          ctx.restore();
+
+          // Glossy highlight band on the front face
+          var gloss = ctx.createLinearGradient(0, top, 0, bottom);
+          gloss.addColorStop(0, 'rgba(255,255,255,0.20)');
+          gloss.addColorStop(0.45, 'rgba(255,255,255,0)');
+          ctx.fillStyle = gloss;
+          ctx.fillRect(left, top, right - left, bottom - top);
+
+          // Neon rim outline around the front face
+          ctx.globalAlpha = 1;
+          ctx.shadowColor = glowColor;
+          ctx.shadowBlur = 6;
+          ctx.strokeStyle = glowColor;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(left, top, right - left, bottom - top);
+          ctx.globalAlpha = 1;
+
+          ctx.restore();
+        });
+      });
+    }
+  };
+
+
+  function renderChart() {
+    var canvas = document.getElementById('invChart');
+    if (!canvas) return;
+    var chartInvestments = sortedActiveInvestments();
+    var labels = chartInvestments.map(function (i) { return i.name; });
+    var principalData = chartInvestments.map(function (i) { return i.principal; });
+    var currentData = chartInvestments.map(function (i) { return i.current; });
+    var accProfitData = chartInvestments.map(function (i) { return profitSumFor(i.id); });
+    var pointColors = chartInvestments.map(function (i) { return (i.current - i.principal) >= 0 ? '#3EFF8FFF' : '#FF5C5CFF'; });
+
+    var signature = chartScaleType + '|' + labels.join(',') + '|' + principalData.join(',') + '|' + currentData.join(',') + '|' + accProfitData.join(',');
+    if (chartInstance && signature === lastChartSignature) return; // nothing chart-relevant changed — skip the update
+    lastChartSignature = signature;
+
+    var allVals = principalData.concat(currentData).concat(accProfitData);
+    var dataMax = allVals.length ? Math.max.apply(null, allVals) : 0;
+    var yMax = dataMax > 0 ? dataMax * 1.2 : undefined;
+    var positiveVals = allVals.filter(function (v) { return v > 0; });
+    var logMin = positiveVals.length ? Math.max(1, Math.min.apply(null, positiveVals) * 0.5) : 1;
+
+    if (typeof Chart === 'undefined') return;
+    if (labels.length === 0) {
+      if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+      return;
+    }
+
+    if (chartInstance) {
+      // Update the existing chart in place — much cheaper than destroying and rebuilding it.
+      chartInstance.data.labels = labels;
+      chartInstance.data.datasets[0].data = principalData;
+      chartInstance.data.datasets[1].data = currentData;
+      chartInstance.data.datasets[1].backgroundColor = pointColors;
+      chartInstance.data.datasets[2].data = accProfitData;
+      chartInstance.options.scales.x.type = chartScaleType;
+      chartInstance.options.scales.x.beginAtZero = chartScaleType === 'linear';
+      chartInstance.options.scales.x.min = chartScaleType === 'logarithmic' ? logMin : undefined;
+      chartInstance.options.scales.x.max = yMax;
+      chartInstance.update();
+      return;
+    }
+
+    chartInstance = new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Principal',
+            data: principalData,
+            backgroundColor: '#3DE1E8B3',
+            borderRadius: 4,
+            categoryPercentage: 0.85,
+            barPercentage: 0.78,
+            stack: 'principal',
+            datalabels: {
+              display: true,
+              anchor: 'end',
+              align: 'end',
+              offset: 4,
+              color: '#EDEAE0',
+              font: { size: 13, weight: '600' },
+              formatter: function (value) { return fmt(value); }
+            }
+          },
+          {
+            label: 'Current Value',
+            data: currentData,
+            backgroundColor: pointColors,
+            borderRadius: 4,
+            categoryPercentage: 0.85,
+            barPercentage: 0.78,
+            stack: 'current',
+            datalabels: {
+              display: true,
+              anchor: 'end',
+              align: 'end',
+              offset: 4,
+              clamp: true,
+              clip: false,
+              backgroundColor: 'rgba(10, 15, 31, 1)',
+              borderRadius: 4,
+              padding: { top: 3, bottom: 3, left: 6, right: 6 },
+              color: function (ctx) {
+                var inv = sortedActiveInvestments()[ctx.dataIndex];
+                if (!inv) return '#4ADE80';
+                return (inv.current - inv.principal) >= 0 ? '#4ADE80' : '#F87171';
+              },
+              font: { size: 13, weight: '700' },
+              formatter: function (value, ctx) {
+                var inv = sortedActiveInvestments()[ctx.dataIndex];
+                if (!inv) return '';
+                var diff = inv.current - inv.principal;
+                return [fmt(inv.current), (diff >= 0 ? '+' : '') + fmt(diff)];
+              }
+            }
+          },
+          {
+            label: 'Accumulated Profit (Extra)',
+            data: accProfitData,
+            backgroundColor: '#FFC93CFF',
+            borderRadius: 4,
+            categoryPercentage: 0.85,
+            barPercentage: 0.78,
+            stack: 'profit',
+            datalabels: {
+              display: true,
+              anchor: 'end',
+              align: 'end',
+              offset: 4,
+              color: '#EDEAE0',
+              font: { size: 13, weight: '600' },
+              formatter: function (value) { return fmt(value); }
+            }
+          }
+        ]
+      },
+      plugins: [axis3DPlugin, bar3DPlugin, yLabelSyncPlugin],
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { right: 74, top: 10 } },
+        animation: {
+          duration: 1100,
+          easing: 'easeOutExpo',
+          delay: function (ctx) {
+            if (ctx.type === 'data' && ctx.mode === 'default') {
+              return ctx.dataIndex * 120 + ctx.datasetIndex * 90;
+            }
+            return 0;
+          }
+        },
+        transitions: {
+          active: { animation: { duration: 250 } }
+        },
+        plugins: {
+          legend: { display: false },
+          datalabels: { display: false, z: 10 },
+          tooltip: {
+            enabled: false,
+            mode: 'index',
+            intersect: false,
+            external: externalTooltipHandler
+          }
+        },
+        scales: {
+          x: {
+            type: chartScaleType,
+            stacked: false,
+            beginAtZero: chartScaleType === 'linear',
+            min: chartScaleType === 'logarithmic' ? logMin : undefined,
+            max: yMax,
+            ticks: {
+              color: '#4ADE80',
+              font: { family: 'Consolas, Menlo, monospace', size: 11, weight: '600' },
+              callback: function (value) { return '$' + value.toLocaleString('en-US'); }
+            },
+            grid: { color: 'rgba(74, 222, 128, 0.14)' },
+            border: { color: 'rgba(74, 222, 128, 0.5)' }
+          },
+          y: {
+            stacked: false,
+            ticks: { display: false },
+            grid: { color: 'rgba(74, 222, 128, 0.14)' },
+            border: { color: 'rgba(74, 222, 128, 0.5)' },
+            afterFit: function (scale) { scale.width = 92; }
+          }
+        }
+      }
+    });
+  }
+
+  // ---------- Render ----------
+  function render() {
+    var app = document.getElementById('app');
+
+    var summaryPrincipal = investments.reduce(function (s, i) { return s + i.principal; }, 0);
+    var summaryCurrent = investments.reduce(function (s, i) { return s + i.current; }, 0);
+    var diff = summaryCurrent - summaryPrincipal;
+    var diffPct = summaryPrincipal > 0 ? (diff / summaryPrincipal) * 100 : 0;
+    var totalProfit = profits.reduce(function (s, p) { return s + p.amount; }, 0);
+    var connectedGlobal = !syncUrlEditing && syncUrl.trim();
+
+    var html = '';
+
+    // Header
+    html += '<header>';
+    html += '<div class="header-row">';
+    html += '<div><div class="eyebrow">&gt; Y. CAPITAL // NAV-COMPUTER</div><h1>Investment Stats</h1>';
+    html += '<div class="console-status">';
+    html += '<span><span class="led-dot" style="color:#4ADE80"></span>SYSTEM ONLINE</span>';
+    html += '<span><span class="led-dot" style="color:' + (connectedGlobal ? '#4ADE80' : '#8B93AD') + '"></span>LINK: ' + (connectedGlobal ? 'CLOUD SYNCED' : 'LOCAL ONLY') + '</span>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+    if (autoRefreshing) html += '<div class="hint"><span class="spin" style="display:inline-flex">' + icon('refresh', 12) + '</span> Auto-updating stock closing prices...</div>';
+    html += '</header>';
+
+    var totalPL = diff + totalProfit - bankTransferTotals().fee; // Total P/L is net of bank transfer fees
+
+    // Portfolio summary table
+    html += '<div class="card mb-8">';
+    html += '<div class="section-title">Portfolio Summary</div>';
+    var psPrincipal = effectivePrincipal();
+    var psInvested = totalPrincipal();
+    html += '<div class="portfolio-summary-grid cols-4">';
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">Principal</div><div class="ps-val" style="color:var(--text)">' + (isNaN(psPrincipal) ? '&mdash;' : fmt(psPrincipal)) + '</div></div>';
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">Total Invested</div><div class="ps-val" style="color:#6C8CFF">' + fmt(psInvested) + '</div></div>';
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">Cash Flow</div><div class="ps-val" style="color:' + (isNaN(psPrincipal) ? 'var(--text)' : (psPrincipal - psInvested >= 0 ? '#4ADE80' : '#F87171')) + '">' + (isNaN(psPrincipal) ? '&mdash;' : fmt(psPrincipal - psInvested)) + '</div></div>';
+    var ytdPct = psInvested > 0 ? (totalPL / psInvested * 100) : NaN;
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">% of YTD Return</div><div class="ps-val" style="color:' + (isNaN(ytdPct) ? 'var(--text)' : (ytdPct >= 0 ? '#4ADE80' : '#F87171')) + '">' + (isNaN(ytdPct) ? '&mdash;' : (ytdPct >= 0 ? '+' : '') + ytdPct.toFixed(2) + '%') + '</div></div>';
+    html += '</div>';
+    html += '<div class="portfolio-summary-grid cols-4">';
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">Principal P/L</div><div class="ps-val" style="color:' + (diff >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(diff) + '</div></div>';
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">Acc. Profit</div><div class="ps-val" style="color:#E8C468">' + fmt(totalProfit) + '</div></div>';
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">Total Fee</div><div class="ps-val" style="color:#FF8FC7">' + fmt(bankTransferTotals().fee) + '</div></div>';
+    html += '<div class="portfolio-summary-cell"><div class="ps-lbl">Total P/L</div><div class="ps-val" style="color:' + (totalPL >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(totalPL) + '</div></div>';
+    html += '</div>';
+    html += '<div class="stat-sub" style="margin-top:12px">Principal ' + fmt(summaryPrincipal) + ' \u2192 Current ' + fmt(summaryCurrent) + ' (' + (diffPct >= 0 ? '+' : '') + diffPct.toFixed(1) + '%) &middot; ' + profits.length + ' profit entries</div>';
+    html += '</div>';
+
+    // Chart
+    if (activeInvestments().length > 0) {
+      html += '<div class="card chart-card-glow mb-8">';
+      html += '<div class="header-row" style="align-items:center;margin-bottom:0">';
+      html += '<div class="section-title" style="color:var(--text);margin-bottom:0">Investment: Principal vs Current Value</div>';
+      html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      html += '<button class="btn-ghost" id="btnUpdateAll" ' + (autoRefreshing ? 'disabled' : '') + '><span class="' + (autoRefreshing ? 'spin' : '') + '" style="display:inline-flex">' + icon('refresh', 14, '#4ADE80') + '</span> Update All</button>';
+      html += '<button class="btn-ghost" id="btnScaleToggle">' + (chartScaleType === 'linear' ? 'Log Scale' : 'Linear Scale') + '</button>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="chart-frame" id="chartFrameSlot" style="height:' + Math.max(360, activeInvestments().length * 150) + 'px;position:relative"></div>';
+      html += '<div id="chartTooltipBox" class="chart-tooltip-box">Hover a bar to see details</div>';
+      html += '<div class="chart-legend">';
+      html += '<div class="chart-legend-item"><span class="chart-legend-dot" style="' + make3DDotStyle('#3DE1E8') + '"></span>Principal</div>';
+      html += '<div class="chart-legend-item"><span class="chart-legend-dot" style="' + make3DDotStyle('#3EFF8F') + '"></span>Current</div>';
+      html += '<div class="chart-legend-item"><span class="chart-legend-dot" style="' + make3DDotStyle('#FFC93C') + '"></span>Extra</div>';
+      html += '</div>';
+      html += '</div>';
+    }
+
+    if (SHOW_SOLID_LIQUID && activeInvestments().some(function (i) { return i.assetType === 'Solid' || i.assetType === 'Liquid'; })) {
+      try {
+        html += renderSolidLiquidGauge();
+      } catch (gaugeErr) {
+        var fbTotalP = totalPrincipal();
+        var fbSolidP = solidPrincipalTotal();
+        var fbLiquidP = liquidPrincipalTotal();
+        var fbSolidPct = fbTotalP ? (fbSolidP / fbTotalP * 100) : 0;
+        var fbLiquidPct = fbTotalP ? (fbLiquidP / fbTotalP * 100) : 0;
+        html += '<div class="card mb-8" style="text-align:center">';
+        html += '<div class="section-title">Solid / Liquid Split</div>';
+        html += '<div style="display:flex;justify-content:center;gap:28px;flex-wrap:wrap;font-family:Consolas,Menlo,monospace">';
+        html += '<div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);letter-spacing:1px">SOLID</div><div style="font-size:20px;font-weight:700;color:#C9A227">' + fbSolidPct.toFixed(1) + '%</div><div class="hint">' + fmt(fbSolidP) + '</div></div>';
+        html += '<div style="text-align:center"><div style="font-size:11px;color:var(--text-muted);letter-spacing:1px">LIQUID</div><div style="font-size:20px;font-weight:700;color:#38BDF8">' + fbLiquidPct.toFixed(1) + '%</div><div class="hint">' + fmt(fbLiquidP) + '</div></div>';
+        html += '</div>';
+        html += '</div>';
+      }
+    }
+
+    // Investment cards
+    if (activeInvestments().length === 0) {
+      html += '<div class="empty-note center-empty"><div class="empty-icon">' + icon('wallet', 32, '#8B93AD') + '</div>No investment items yet — add one below.</div>';
+    } else {
+      var greenPalette = ['#22C55E', '#0D9488', '#65D46E', '#15803D', '#34D399', '#4ADE80', '#059669', '#86EFAC'];
+      var cardsRowHtml = '';
+      var detailsHtml = '';
+      sortedActiveInvestments().forEach(function (inv, invIdx) {
+        var accentColor = greenPalette[invIdx % greenPalette.length];
+        var invDiff = inv.current - inv.principal;
+        var isOpen = !!expanded[inv.id];
+        var itemProfits = profitsFor(inv.id).slice().sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+        var itemProfitSum = profitSumFor(inv.id);
+        var draft = getDraft(inv.id);
+
+        var isSelected = selectedCardId === inv.id || editingInvId === inv.id;
+        cardsRowHtml += '<div class="card-gallery-item' + (isSelected ? ' selected' : '') + '" data-toggle-card-details="' + inv.id + '">' + renderStatCard(inv, accentColor, isSelected) + '</div>';
+
+        if (!isSelected) return;
+
+        detailsHtml += '<div class="card' + (editingInvId === inv.id ? ' card-editing' : '') + '" style="border-left:3px solid ' + accentColor + '">';
+        if (editingInvId === inv.id) {
+          detailsHtml += '<div class="section-title" style="color:var(--gold-light)">Editing Item</div>';
+          detailsHtml += '<div class="type-toggle">';
+          detailsHtml += '<button data-edit-type="general" class="' + (editDraft.type === 'general' ? 'active' : '') + '">General</button>';
+          detailsHtml += '<button data-edit-type="stock" class="' + (editDraft.type === 'stock' ? 'active' : '') + '">Stock</button>';
+          detailsHtml += '</div>';
+          detailsHtml += '<div class="form-grid">';
+          detailsHtml += fieldGroup('Item Name', '<input type="text" class="field" id="editName" placeholder="Item name" value="' + esc(editDraft.name) + '" />', 'span-3-1');
+          if (editDraft.type === 'stock') {
+            detailsHtml += fieldGroup('Shares', '<input type="text" class="field" id="editShares" placeholder="Shares" inputmode="decimal" value="' + esc(editDraft.shares) + '" />');
+            detailsHtml += fieldGroup('Buy Price / Share', '<input type="text" class="field" id="editBuyPrice" placeholder="Buy price/share" inputmode="decimal" value="' + esc(editDraft.buyPrice) + '" />');
+            detailsHtml += fieldGroup('Current Price / Share', '<input type="text" class="field" id="editPrice" placeholder="Current price/share" inputmode="decimal" value="' + esc(editDraft.price) + '" />');
+            var editOptionDaysSelect = '<select class="field" id="editOptionDays"><option value="">Option Days</option>';
+            ['2-3', '7', '30', '60'].forEach(function (d) {
+              editOptionDaysSelect += '<option value="' + d + '"' + (editDraft.optionDays === d ? ' selected' : '') + '>' + d + '</option>';
+            });
+            editOptionDaysSelect += '</select>';
+            detailsHtml += fieldGroup('Option Days', editOptionDaysSelect);
+            var editEarningsRow = '<div class="price-row" style="grid-column: span 3;">';
+            editEarningsRow += '<input type="date" class="field" id="editEarningsDate" value="' + esc(editDraft.earningsDate) + '" />';
+            editEarningsRow += '<button class="btn-ghost" id="btnFetchEditEarnings" ' + (editEarningsFetching ? 'disabled' : '') + ' title="Fetch earnings date" aria-label="Fetch earnings date"><span class="' + (editEarningsFetching ? 'spin' : '') + '" style="display:inline-flex">' + icon('refresh', 14, '#E8C468') + '</span></button>';
+            editEarningsRow += '</div>';
+            detailsHtml += fieldGroup('Earnings Report Date', editEarningsRow, 'span-3-1');
+          } else {
+            detailsHtml += fieldGroup('Principal Invested', '<input type="text" class="field" id="editPrincipal" placeholder="Principal invested" inputmode="decimal" value="' + esc(editDraft.principal) + '" />');
+            detailsHtml += fieldGroup('Current Value', '<input type="text" class="field" id="editCurrent" placeholder="Current value" inputmode="decimal" value="' + esc(editDraft.current) + '" />');
+          }
+          detailsHtml += fieldGroup('Investment Start Date', '<input type="date" class="field" id="editStartDate" value="' + esc(editDraft.startDate) + '" />', 'span-3-1');
+          var editAssetTypeSelect = '<select class="field" id="editAssetType"><option value="">&mdash; Not set &mdash;</option><option value="Solid"' + (editDraft.assetType === 'Solid' ? ' selected' : '') + '>Solid</option><option value="Liquid"' + (editDraft.assetType === 'Liquid' ? ' selected' : '') + '>Liquid</option></select>';
+          detailsHtml += fieldGroup('Call Asset Type', editAssetTypeSelect, 'span-3-1');
+          detailsHtml += '</div>';
+          if (editDraft.type === 'stock' && editDraft.shares && editDraft.buyPrice && !isNaN(parseMoney(editDraft.shares)) && !isNaN(parseMoney(editDraft.buyPrice))) {
+            detailsHtml += '<div class="hint">Principal = ' + esc(editDraft.shares) + ' shares &times; $' + esc(editDraft.buyPrice) + ' = ' + fmt(parseMoney(editDraft.shares) * parseMoney(editDraft.buyPrice)) + '</div>';
+          }
+          detailsHtml += '<div class="section-title" style="margin-top:16px;color:var(--gold-light)">Card Image</div>';
+          detailsHtml += '<div style="display:flex;align-items:center;gap:12px">';
+          if (inv.customImage) {
+            detailsHtml += '<img src="' + esc(inv.customImage) + '" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid ' + accentColor + '55" />';
+          } else {
+            detailsHtml += '<div style="width:56px;height:56px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px dashed rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center">' + icon('upload', 16, '#8B93AD') + '</div>';
+          }
+          detailsHtml += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+          detailsHtml += '<button type="button" class="btn-ghost" data-upload-image="' + inv.id + '">' + icon('upload', 14, '#4ADE80') + ' ' + (inv.customImage ? 'Replace Image' : 'Upload Image') + '</button>';
+          if (inv.customImage) {
+            detailsHtml += '<button type="button" class="btn-ghost" data-remove-image="' + inv.id + '">' + icon('trash', 14, '#F87171') + ' Remove</button>';
+          }
+          detailsHtml += '</div>';
+          detailsHtml += '</div>';
+          var editUploadedImages = getAllUploadedImages().filter(function (img) { return img.url !== inv.customImage; });
+          if (editUploadedImages.length > 0) {
+            detailsHtml += '<div class="hint" style="margin-top:8px">Or pick a previously uploaded image:</div>';
+            detailsHtml += '<select class="field" id="editPickImageSelect" data-edit-pick-image="' + inv.id + '" style="margin-top:6px">';
+            detailsHtml += '<option value="">&mdash; Select an image &mdash;</option>';
+            editUploadedImages.forEach(function (img) {
+              detailsHtml += '<option value="' + esc(img.url) + '">' + esc(img.name) + '</option>';
+            });
+            detailsHtml += '</select>';
+          }
+          detailsHtml += '<div class="sync-actions" style="margin-top:12px">';
+          detailsHtml += '<button class="btn-gold" data-save-edit="' + inv.id + '">Save Changes</button>';
+          detailsHtml += '<button class="btn-ghost" data-cancel-edit="1">Cancel</button>';
+          detailsHtml += '</div>';
+          detailsHtml += '</div>'; // card
+          return;
+        }
+        detailsHtml += '<div class="inv-card-top" style="display:block">';
+        detailsHtml += '<div class="inv-name"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + accentColor + ';box-shadow:0 0 6px ' + accentColor + ';margin-right:8px;vertical-align:middle"></span>' + esc(inv.name) + (inv.startDate ? '<span class="inv-start-date">' + icon('clock', 11, '#8B93AD') + ' Since ' + esc(inv.startDate) + '</span>' : '') + '</div>';
+        detailsHtml += '<div class="inv-hud-wrap">';
+
+        var hudLabels = [];
+        var hudValues = [];
+        if (inv.assetType) {
+          hudLabels.push('Asset Type');
+          hudValues.push('<span class="val" style="color:' + (inv.assetType === 'Solid' ? '#38BDF8' : '#4ADE80') + '">' + esc(inv.assetType) + '</span>');
+        }
+        hudLabels.push('Principal');
+        hudValues.push('<span class="val">' + fmt(inv.principal) + '</span>');
+        if (inv.type === 'stock') {
+          hudLabels.push('Buy Price');
+          hudValues.push('<span class="val" style="color:var(--text)">' + fmt(inv.buyPrice) + '</span>');
+          hudLabels.push('Current Price');
+          hudValues.push('<span class="val" style="color:var(--text)">' + fmt(inv.price) + '</span>');
+          hudLabels.push('Shares');
+          hudValues.push('<span class="val" style="color:var(--text)">' + esc(inv.shares) + '</span>');
+          if (inv.optionDays) {
+            hudLabels.push('Option Days');
+            hudValues.push('<span class="val" style="color:var(--text)">' + esc(inv.optionDays) + '</span>');
+          }
+          if (inv.earningsDate) {
+            hudLabels.push('Earnings Date');
+            hudValues.push('<span class="val" style="color:var(--text)">' + esc(inv.earningsDate) + '</span>');
+          }
+        }
+        hudLabels.push('Current');
+        hudValues.push('<span class="val" style="color:' + (invDiff >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(inv.current) + '</span>');
+        hudLabels.push('P/L');
+        hudValues.push('<span class="val" style="color:' + (invDiff >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(invDiff) + '</span>');
+        var invDiffPct = inv.principal !== 0 ? (invDiff / inv.principal) * 100 : 0;
+        hudLabels.push('P/L %');
+        hudValues.push('<span class="val" style="color:' + (invDiff >= 0 ? '#4ADE80' : '#F87171') + '">' + (invDiffPct >= 0 ? '+' : '') + invDiffPct.toFixed(1) + '%</span>');
+        var itemTotalPL = invDiff + itemProfitSum;
+        hudLabels.push('Total P/L');
+        hudValues.push('<span class="val" style="color:' + (itemTotalPL >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(itemTotalPL) + '</span>');
+
+        detailsHtml += '<div class="inv-hud-box">';
+        hudLabels.forEach(function (l, i) {
+          detailsHtml += '<div class="inv-hud-cell">';
+          detailsHtml += '<div class="inv-hud-lbl"><span class="lbl">' + l + '</span></div>';
+          detailsHtml += '<div class="inv-hud-val">' + hudValues[i] + '</div>';
+          detailsHtml += '</div>';
+        });
+        detailsHtml += '</div>';
+
+        detailsHtml += '<span class="inv-hud-actions">';
+        if (inv.type === 'stock') {
+          detailsHtml += '<span class="hud-updated-note">' + icon('clock', 11, '#8B93AD') + ' ' + esc(inv.lastPriceDate || '—') + '</span>';
+          detailsHtml += '<button class="icon-btn" data-refresh="' + inv.id + '" title="Refresh price" aria-label="Refresh price" ' + (refreshingId === inv.id ? 'disabled' : '') + '><span class="' + (refreshingId === inv.id ? 'spin' : '') + '" style="display:inline-flex">' + icon('refresh', 18, '#8B93AD') + '</span></button>';
+        }
+        detailsHtml += '<button class="icon-btn" data-edit-inv="' + inv.id + '" title="Edit" aria-label="Edit investment item">' + icon('edit', 18, '#8B93AD') + '</button>';
+        detailsHtml += '<button class="icon-btn" data-remove-inv="' + inv.id + '" title="Archive" aria-label="Archive investment item">' + icon('archive', 18, '#8B93AD') + '</button>';
+        detailsHtml += '</span>';
+        detailsHtml += '</div>';
+        detailsHtml += '</div>';
+
+        detailsHtml += '<div class="profit-box">';
+        detailsHtml += '<button class="profit-toggle" data-toggle="' + inv.id + '">';
+        detailsHtml += '<span class="profit-toggle-label">' + icon('coins', 16, '#C9A227') + ' Acc. Profit (Item)</span>';
+        detailsHtml += '<span class="profit-toggle-value"><span style="color:#E8C468;font-size:16px;font-weight:500">' + fmt(itemProfitSum) + '</span>' + icon(isOpen ? 'chevronUp' : 'chevronDown', 16, '#8B93AD') + '</span>';
+        detailsHtml += '</button>';
+
+        if (isOpen) {
+          detailsHtml += '<div style="margin-top:12px">';
+          detailsHtml += '<div class="form-grid" style="grid-template-columns:1fr 1fr">';
+          detailsHtml += '<input type="text" class="field" data-profit-name="' + inv.id + '" placeholder="Profit item name" value="' + esc(draft.name) + '" />';
+          detailsHtml += '<input type="text" class="field" data-profit-amount="' + inv.id + '" placeholder="Amount" inputmode="decimal" value="' + esc(draft.amount) + '" />';
+          detailsHtml += '</div>';
+          detailsHtml += '<button class="btn-gold" data-add-profit="' + inv.id + '" style="width:100%;margin-top:8px;margin-bottom:12px">' + icon('plus', 14, '#081410') + ' Add Profit</button>';
+          if (itemProfits.length > 0) {
+            var profitPageSize = 5;
+            var profitTotalPages = Math.max(1, Math.ceil(itemProfits.length / profitPageSize));
+            var profitCurrentPage = Math.min(profitPage[inv.id] || 1, profitTotalPages);
+            var profitPageItems = itemProfits.slice((profitCurrentPage - 1) * profitPageSize, profitCurrentPage * profitPageSize);
+            profitPageItems.forEach(function (p) {
+              detailsHtml += renderProfitEntry(p);
+            });
+            if (profitTotalPages > 1) {
+              detailsHtml += '<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px">';
+              detailsHtml += '<button type="button" class="btn-ghost" data-profit-page-prev="' + inv.id + '" ' + (profitCurrentPage <= 1 ? 'disabled' : '') + '>&#8249; Prev</button>';
+              detailsHtml += '<span class="hint" style="font-weight:600">Page ' + profitCurrentPage + ' of ' + profitTotalPages + '</span>';
+              detailsHtml += '<button type="button" class="btn-ghost" data-profit-page-next="' + inv.id + '" ' + (profitCurrentPage >= profitTotalPages ? 'disabled' : '') + '>Next &#8250;</button>';
+              detailsHtml += '</div>';
+            }
+          } else {
+            detailsHtml += '<div class="empty-note">No profit entries for this item yet</div>';
+          }
+          detailsHtml += '</div>';
+        }
+        detailsHtml += '</div>'; // profit-box
+        detailsHtml += '</div>'; // card
+      });
+      html += '<div class="card-gallery-row">' + cardsRowHtml + '</div>';
+      if (detailsHtml) html += '<div id="cardDetailsPanel">' + detailsHtml + '</div>';
+    }
+
+    // Unassigned profits
+    var unassigned = unassignedProfits();
+    if (unassigned.length > 0) {
+      html += '<div class="card" style="margin-top:24px">';
+      html += '<div class="section-title" style="color:var(--text-muted)">Unassigned Profit Items</div>';
+      unassigned.forEach(function (p) {
+        html += renderProfitEntry(p);
+      });
+      html += '</div>';
+    }
+
+    // Bank Transfer Records (principal contributions)
+    if (!showBankTransfers) {
+      html += '<button class="btn-ghost" id="btnShowBankTransfers" style="width:100%">' + icon('coins', 14, '#E8C468') + ' Bank Transfer Records (' + bankTransfers.length + ')</button>';
+    } else {
+      var btTotals = bankTransferTotals();
+      var btInvestorNames = btTotals.byInvestor.map(function (x) { return x.name; }).filter(function (n) { return n !== '(no investor)'; });
+      html += '<div class="card mb-6">';
+      html += '<div class="header-row" style="align-items:center;margin-bottom:0"><div class="section-title" style="margin-bottom:0">Bank Transfer Records</div><button class="btn-ghost" id="btnHideBankTransfers">Close</button></div>';
+      html += '<div class="sync-desc">Log every transfer that adds to your invested principal: date, investor, amount and any extra fees (wire, FX, etc.). Fees are tracked separately and are not counted as principal.</div>';
+
+      html += '<div class="inv-hud-box">';
+      html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Total Transferred</span></div><div class="inv-hud-val"><span class="val" style="color:#4ADE80">' + fmt(btTotals.amount) + '</span></div></div>';
+      html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Extra Fees</span></div><div class="inv-hud-val"><span class="val" style="color:#E8C468">' + fmt(btTotals.fee) + '</span></div></div>';
+      html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Net to Principal</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text)">' + fmt(btTotals.net) + '</span></div></div>';
+      html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Transfers</span></div><div class="inv-hud-val"><span class="val" style="color:#38BDF8">' + bankTransfers.length + '</span></div></div>';
+      html += '</div>';
+
+      if (btTotals.byInvestor.length > 0) {
+        html += '<div class="section-title" style="margin-top:16px;font-size:11px;color:var(--gold-light)">By Investor</div>';
+        html += '<div style="display:flex;flex-direction:column;gap:6px">';
+        btTotals.byInvestor.forEach(function (inv) {
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:rgba(0,0,0,0.2)">';
+          html += '<div><div style="font-size:13px;color:var(--text)">' + esc(inv.name) + '</div><div class="hint" style="margin-top:2px">' + inv.count + (inv.count === 1 ? ' transfer' : ' transfers') + (btTotals.amount ? ' &middot; ' + (inv.amount / btTotals.amount * 100).toFixed(1) + '% of total' : '') + '</div></div>';
+          html += '<div style="text-align:right;font-family:Consolas,Menlo,monospace"><div style="font-weight:700;color:#4ADE80">' + fmt(inv.amount) + '</div>' + (inv.fee ? '<div class="hint" style="margin-top:2px">fees ' + fmt(inv.fee) + '</div>' : '') + '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
+      html += '<div class="section-title" style="margin-top:16px;font-size:11px;color:var(--gold-light)">Add Transfer</div>';
+      html += '<datalist id="btInvestorList">' + btInvestorNames.map(function (n) { return '<option value="' + esc(n) + '"></option>'; }).join('') + '</datalist>';
+      html += '<div class="form-grid">';
+      html += fieldGroup('Date', '<input type="date" class="field" id="btDate" value="' + esc(bankTransferDraft.date) + '" />');
+      html += fieldGroup('Investor', '<input type="text" class="field" id="btInvestor" list="btInvestorList" autocomplete="off" placeholder="Investor name" value="' + esc(bankTransferDraft.investor) + '" />');
+      html += fieldGroup('Amount ($)', '<input type="text" class="field" id="btAmount" inputmode="decimal" placeholder="Principal transferred" value="' + esc(bankTransferDraft.amount) + '" />');
+      html += fieldGroup('Extra Fee ($)', '<input type="text" class="field" id="btFee" inputmode="decimal" placeholder="Optional" value="' + esc(bankTransferDraft.fee) + '" />');
+      html += fieldGroup('Note', '<input type="text" class="field" id="btNote" placeholder="Optional (e.g. wire ref.)" value="' + esc(bankTransferDraft.note) + '" />');
+      html += '</div>';
+      if (msg.bankError && editingBankTransferId === null) html += '<div class="error-text">' + esc(msg.bankError) + '</div>';
+      html += '<button class="btn-gold" id="btnAddBankTransfer" style="width:100%;margin-top:8px">' + icon('plus', 14, '#081410') + ' Add Transfer Record</button>';
+      html += '<button class="btn-ghost" id="btnToggleBankTransferList" style="width:100%;margin-top:8px">' + icon(showBankTransferList ? 'chevronUp' : 'chevronDown', 14, '#8B93AD') + ' ' + (showBankTransferList ? 'Hide' : 'Show') + ' Records (' + bankTransfers.length + ')</button>';
+
+      if (showBankTransferList) {
+        if (bankTransfers.length === 0) {
+          html += '<div class="empty-note" style="margin-top:12px">No bank transfers recorded yet</div>';
+        } else {
+          html += '<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">';
+          bankTransfers.map(function (b, i) { return { b: b, i: i }; }).sort(function (x, y) {
+            var byDate = (y.b.date || '').localeCompare(x.b.date || '');
+            return byDate !== 0 ? byDate : y.i - x.i;
+          }).forEach(function (row) {
+            var b = row.b;
+            if (editingBankTransferId === b.id) {
+              html += '<div style="padding:10px;border-radius:6px;background:rgba(0,0,0,0.25)">';
+              html += '<div class="form-grid">';
+              html += fieldGroup('Date', '<input type="date" class="field" id="editBtDate" value="' + esc(editBankTransferDraft.date) + '" />');
+              html += fieldGroup('Investor', '<input type="text" class="field" id="editBtInvestor" list="btInvestorList" autocomplete="off" value="' + esc(editBankTransferDraft.investor) + '" />');
+              html += fieldGroup('Amount ($)', '<input type="text" class="field" id="editBtAmount" inputmode="decimal" value="' + esc(editBankTransferDraft.amount) + '" />');
+              html += fieldGroup('Extra Fee ($)', '<input type="text" class="field" id="editBtFee" inputmode="decimal" placeholder="Optional" value="' + esc(editBankTransferDraft.fee) + '" />');
+              html += fieldGroup('Note', '<input type="text" class="field" id="editBtNote" placeholder="Optional" value="' + esc(editBankTransferDraft.note) + '" />');
+              html += '</div>';
+              if (msg.bankError) html += '<div class="error-text">' + esc(msg.bankError) + '</div>';
+              html += '<div class="sync-actions" style="margin-top:8px">';
+              html += '<button class="btn-gold" data-save-bt="' + esc(b.id) + '">Save</button>';
+              html += '<button class="btn-ghost" data-cancel-bt="1">Cancel</button>';
+              html += '</div>';
+              html += '</div>';
+              return;
+            }
+            var bAmount = parseMoney(b.amount) || 0;
+            var bFee = parseMoney(b.fee) || 0;
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:rgba(0,0,0,0.2)">';
+            html += '<div style="min-width:0"><div style="font-size:13px;color:var(--text)">' + esc(b.investor || '(no investor)') + '</div>';
+            html += '<div class="hint" style="margin-top:2px">' + esc(b.date) + (b.note ? ' &middot; ' + esc(b.note) : '') + '</div></div>';
+            html += '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">';
+            html += '<span style="font-family:Consolas,Menlo,monospace;font-weight:700;text-align:right"><span style="color:' + (bAmount >= 0 ? '#4ADE80' : '#F87171') + '">' + fmt(bAmount) + '</span>' + (bFee ? '<span style="display:block;font-size:11px;font-weight:500;color:#E8C468">+ ' + fmt(bFee) + ' fee</span>' : '') + '</span>';
+            html += '<button class="icon-btn" data-edit-bt="' + esc(b.id) + '" title="Edit" aria-label="Edit bank transfer">' + icon('edit', 14, '#8B93AD') + '</button>';
+            html += '<button class="icon-btn" data-remove-bt="' + esc(b.id) + '" title="Delete" aria-label="Delete bank transfer">' + icon('trash', 14, '#8B93AD') + '</button>';
+            html += '</div>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+      }
+      html += '</div>';
+    }
+
+    // Add investment form — collapsed behind a toggle button by default
+    if (!showAddForm) {
+      html += '<button class="btn-ghost" id="btnShowAddForm" style="margin-top:24px;width:100%">' + icon('plus', 14, '#4ADE80') + ' Add Investment Item</button>';
+    } else {
+      html += '<div class="card mb-6" style="margin-top:24px">';
+      html += '<div class="header-row" style="align-items:center;margin-bottom:12px"><div class="section-title" style="margin-bottom:0">Add Investment Item</div><button class="btn-ghost" id="btnHideAddForm">Close</button></div>';
+    html += '<div class="type-toggle">';
+    html += '<button data-type="general" class="' + (newInvDraft.type === 'general' ? 'active' : '') + '">General</button>';
+    html += '<button data-type="stock" class="' + (newInvDraft.type === 'stock' ? 'active' : '') + '">Stock</button>';
+    html += '</div>';
+    html += '<div class="form-grid">';
+    html += fieldGroup(newInvDraft.type === 'stock' ? 'Stock Name / Ticker' : 'Item Name', '<input type="text" class="field" id="invName" placeholder="' + (newInvDraft.type === 'stock' ? 'Stock name / ticker' : 'Item name') + '" value="' + esc(newInvDraft.name) + '" />', 'span-3-1');
+    if (newInvDraft.type === 'stock') {
+      html += fieldGroup('Shares', '<input type="text" class="field" id="invShares" placeholder="Shares" inputmode="decimal" value="' + esc(newInvDraft.shares) + '" />');
+      html += fieldGroup('Buy Price / Share', '<input type="text" class="field" id="invBuyPrice" placeholder="Buy price/share" inputmode="decimal" value="' + esc(newInvDraft.buyPrice) + '" />');
+      var invPriceRow = '<div class="price-row" style="grid-column: span 3;">';
+      invPriceRow += '<input type="text" class="field" id="invPrice" placeholder="Current price/share" inputmode="decimal" value="' + esc(newInvDraft.price) + '" />';
+      invPriceRow += '<button class="btn-ghost" id="btnFetchPrice" ' + (priceFetching ? 'disabled' : '') + ' title="Fetch live price" aria-label="Fetch live price"><span class="' + (priceFetching ? 'spin' : '') + '" style="display:inline-flex">' + icon('refresh', 14, '#E8C468') + '</span></button>';
+      invPriceRow += '</div>';
+      html += fieldGroup('Current Price / Share', invPriceRow, 'span-3-1');
+      var invOptionDaysSelect = '<select class="field" id="invOptionDays"><option value="">Option Days</option>';
+      ['2-3', '7', '30', '60'].forEach(function (d) {
+        invOptionDaysSelect += '<option value="' + d + '"' + (newInvDraft.optionDays === d ? ' selected' : '') + '>' + d + '</option>';
+      });
+      invOptionDaysSelect += '</select>';
+      html += fieldGroup('Option Days', invOptionDaysSelect);
+      var invEarningsRow = '<div class="price-row" style="grid-column: span 3;">';
+      invEarningsRow += '<input type="date" class="field" id="invEarningsDate" value="' + esc(newInvDraft.earningsDate) + '" />';
+      invEarningsRow += '<button class="btn-ghost" id="btnFetchEarnings" ' + (earningsFetching ? 'disabled' : '') + ' title="Fetch earnings date" aria-label="Fetch earnings date"><span class="' + (earningsFetching ? 'spin' : '') + '" style="display:inline-flex">' + icon('refresh', 14, '#E8C468') + '</span></button>';
+      invEarningsRow += '</div>';
+      html += fieldGroup('Earnings Report Date', invEarningsRow, 'span-3-1');
+    } else {
+      html += fieldGroup('Principal Invested', '<input type="text" class="field" id="invPrincipal" placeholder="Principal invested" inputmode="decimal" value="' + esc(newInvDraft.principal) + '" />');
+      html += fieldGroup('Current Value', '<input type="text" class="field" id="invCurrent" placeholder="Current value" inputmode="decimal" value="' + esc(newInvDraft.current) + '" />');
+    }
+    html += fieldGroup('Investment Start Date', '<input type="date" class="field" id="invStartDate" value="' + esc(newInvDraft.startDate) + '" />', 'span-3-1');
+    var invAssetTypeSelect = '<select class="field" id="invAssetType"><option value="">&mdash; Not set &mdash;</option><option value="Solid"' + (newInvDraft.assetType === 'Solid' ? ' selected' : '') + '>Solid</option><option value="Liquid"' + (newInvDraft.assetType === 'Liquid' ? ' selected' : '') + '>Liquid</option></select>';
+    html += fieldGroup('Call Asset Type', invAssetTypeSelect, 'span-3-1');
+    html += '</div>';
+    if (newInvDraft.type === 'stock') {
+      html += '<div class="hint">Enter a ticker then press ' + icon('refresh', 11) + ' to fetch today\'s price, or enter it manually</div>';
+    }
+    if (msg.priceError) html += '<div class="error-text">' + esc(msg.priceError) + '</div>';
+    if (msg.earningsError) html += '<div class="error-text">' + esc(msg.earningsError) + '</div>';
+    if (msg.addError) html += '<div class="error-text">' + esc(msg.addError) + '</div>';
+    if (newInvDraft.type === 'stock' && newInvDraft.shares && newInvDraft.buyPrice && !isNaN(parseMoney(newInvDraft.shares)) && !isNaN(parseMoney(newInvDraft.buyPrice))) {
+      html += '<div class="hint">Principal = ' + esc(newInvDraft.shares) + ' shares &times; $' + esc(newInvDraft.buyPrice) + ' = ' + fmt(parseMoney(newInvDraft.shares) * parseMoney(newInvDraft.buyPrice)) + '</div>';
+    }
+    if (newInvDraft.type === 'stock' && newInvDraft.shares && newInvDraft.price && !isNaN(parseMoney(newInvDraft.shares)) && !isNaN(parseMoney(newInvDraft.price))) {
+      html += '<div class="hint">Current value = ' + esc(newInvDraft.shares) + ' shares &times; $' + esc(newInvDraft.price) + ' = ' + fmt(parseMoney(newInvDraft.shares) * parseMoney(newInvDraft.price)) + '</div>';
+    }
+    html += '<div class="section-title" style="margin-top:16px;color:var(--gold-light)">Card Image</div>';
+    html += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">';
+    if (newInvDraft.customImage) {
+      html += '<img src="' + esc(newInvDraft.customImage) + '" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid rgba(74,222,128,0.4)" />';
+    } else {
+      html += '<div style="width:56px;height:56px;border-radius:8px;background:rgba(0,0,0,0.3);border:1px dashed rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center">' + icon('upload', 16, '#8B93AD') + '</div>';
+    }
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    html += '<button type="button" class="btn-ghost" data-upload-image="__newitem__">' + icon('upload', 14, '#4ADE80') + ' ' + (newInvDraft.customImage ? 'Replace Image' : 'Upload Image') + '</button>';
+    if (newInvDraft.customImage) {
+      html += '<button type="button" class="btn-ghost" data-remove-image="__newitem__">' + icon('trash', 14, '#F87171') + ' Remove</button>';
+    }
+    html += '</div>';
+    html += '</div>';
+    var uploadedImages = getAllUploadedImages();
+    if (uploadedImages.length > 0) {
+      html += '<div class="hint" style="margin-top:8px">Or pick a previously uploaded image:</div>';
+      html += '<select class="field" id="pickImageSelect" style="margin-top:6px">';
+      html += '<option value="">&mdash; Select an image &mdash;</option>';
+      uploadedImages.forEach(function (img) {
+        var isSelected = newInvDraft.customImage === img.url;
+        html += '<option value="' + esc(img.url) + '"' + (isSelected ? ' selected' : '') + '>' + esc(img.name) + '</option>';
+      });
+      html += '</select>';
+    }
+    html += '<button class="btn-gold" id="btnAddInv" style="margin-top:12px">' + icon('plus', 15, '#081410') + ' Add Item</button>';
+      html += '</div>';
+    }
+
+    // Archive (closed items can be restored or permanently deleted here)
+    var archived = archivedInvestments();
+    if (!archivePanelOpen) {
+      html += '<button class="btn-ghost" id="archiveToggleRow" style="width:100%">' + icon('archive', 14, '#8B93AD') + ' Archive (' + archived.length + ')</button>';
+    } else {
+      html += '<div class="card mb-6">';
+      html += '<div class="header-row" style="align-items:center;margin-bottom:0">';
+      html += '<div class="section-title" style="margin-bottom:0">' + icon('archive', 16, '#8B93AD') + ' Archive (' + archived.length + ')</div>';
+      html += '<button class="btn-ghost" id="archiveToggleRow">Close</button>';
+      html += '</div>';
+      if (archived.length === 0) {
+        html += '<div class="empty-note" style="margin-top:12px">No archived items.</div>';
+      } else {
+        html += '<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">';
+        archived.forEach(function (inv) {
+          var isViewOpen = !!archiveViewExpanded[inv.id];
+          var invItemProfitSum = profitSumFor(inv.id);
+          var invItemDiff = inv.current - inv.principal;
+          var invItemTotalPL = invItemDiff + invItemProfitSum;
+          html += '<div style="border-radius:8px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.06)">';
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px">';
+          html += '<div><div style="font-weight:600;color:var(--text)">' + esc(inv.name) + '</div><div class="hint" style="margin-top:2px">Archived ' + esc(inv.archivedDate || '') + '</div></div>';
+          html += '<div style="display:flex;gap:8px">';
+          html += '<button class="btn-ghost" data-view-archived="' + inv.id + '">' + icon(isViewOpen ? 'chevronUp' : 'chevronDown', 14, '#8B93AD') + ' View</button>';
+          html += '<button class="btn-ghost" data-restore-inv="' + inv.id + '">' + icon('cloudUp', 14, '#4ADE80') + ' Restore</button>';
+          html += '<button class="icon-btn" data-delete-inv-perm="' + inv.id + '" title="Delete permanently" aria-label="Delete permanently">' + icon('trash', 16, '#F87171') + '</button>';
+          html += '</div>';
+          html += '</div>';
+          if (isViewOpen) {
+            html += '<div style="padding:0 12px 12px 12px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">';
+            var archiveContentColStart = html.length;
+            html += '<div style="flex:1 1 260px;min-width:0">';
+            html += '<div class="inv-hud-box">';
+            html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Type</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text);font-size:14px">' + (inv.type === 'stock' ? 'Stock' : 'General') + '</span></div></div>';
+            html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Principal</span></div><div class="inv-hud-val"><span class="val" style="color:#6C8CFF;font-size:14px">' + fmt(inv.principal) + '</span></div></div>';
+            html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Current</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text);font-size:14px">' + fmt(inv.current) + '</span></div></div>';
+            html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Principal P/L</span></div><div class="inv-hud-val"><span class="val" style="color:' + (invItemDiff >= 0 ? '#4ADE80' : '#F87171') + ';font-size:14px">' + fmt(invItemDiff) + '</span></div></div>';
+            html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Acc. Profit</span></div><div class="inv-hud-val"><span class="val" style="color:#D4A017;font-size:14px">' + fmt(invItemProfitSum) + '</span></div></div>';
+            html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Total P/L</span></div><div class="inv-hud-val"><span class="val" style="color:' + (invItemTotalPL >= 0 ? '#4ADE80' : '#F87171') + ';font-size:14px">' + fmt(invItemTotalPL) + '</span></div></div>';
+            if (inv.type === 'stock') {
+              html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Shares</span></div><div class="inv-hud-val"><span class="val" style="color:#38BDF8;font-size:14px">' + esc(inv.shares) + '</span></div></div>';
+              html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Buy Price</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text);font-size:14px">$' + esc(inv.buyPrice) + '</span></div></div>';
+              if (inv.optionDays) html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Option Days</span></div><div class="inv-hud-val"><span class="val" style="color:#E8C468;font-size:14px">' + esc(inv.optionDays) + '</span></div></div>';
+              if (inv.earningsDate) html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Earnings Date</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text);font-size:14px">' + esc(inv.earningsDate) + '</span></div></div>';
+            }
+            if (inv.startDate) html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Start Date</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text);font-size:14px">' + esc(inv.startDate) + '</span></div></div>';
+            html += '</div>';
+            if (invItemProfitSum !== 0) {
+              html += '<div style="margin-top:8px" class="hint">Profit entries: ' + profitsFor(inv.id).map(function (p) { return esc(p.name) + ' (' + fmt(p.amount) + ')'; }).join(', ') + '</div>';
+            }
+            html += '</div>';
+            var archiveContentColumnHtml = html.slice(archiveContentColStart);
+            html = html.slice(0, archiveContentColStart);
+            html += renderStatCard(inv, '#8B93AD');
+            html += archiveContentColumnHtml;
+            html += '</div>';
+          }
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+
+    // Local backup
+    if (!showLocalBackup) {
+      html += '<button class="btn-ghost" id="btnShowLocalBackup" style="width:100%">' + icon('download', 14, '#C9A227') + ' Local Backup</button>';
+    } else {
+      html += '<div class="card mb-6">';
+      html += '<div class="header-row" style="align-items:center;margin-bottom:0"><div class="section-title" style="margin-bottom:0">Local Backup</div><button class="btn-ghost" id="btnHideLocalBackup">Close</button></div>';
+      html += '<div class="sync-desc">Export a JSON snapshot of your data, or restore from a previously exported file.</div>';
+      html += '<div class="sync-actions">';
+      html += '<button class="btn-ghost" id="btnExport">' + icon('download', 14, '#C9A227') + ' Export Backup</button>';
+      html += '<button class="btn-ghost" id="btnImport">' + icon('upload', 14, '#C9A227') + ' Import Backup</button>';
+      html += '</div>';
+      if (msg.importError) html += '<div class="error-text">' + esc(msg.importError) + '</div>';
+      if (msg.importOk) html += '<div class="ok-text">' + esc(msg.importOk) + '</div>';
+      html += '</div>';
+    }
+
+    // Finnhub API key (optional — used for live stock quotes and earnings dates; falls back to Stooq/Yahoo if not set)
+    if (!showFinnhubSection) {
+      html += '<button class="btn-ghost" id="btnShowFinnhub" style="width:100%">' + icon('trendUp', 14, '#4ADE80') + ' Finnhub API Key' + (finnhubApiKey.trim() ? ' (Connected)' : '') + '</button>';
+    } else {
+      html += '<div class="card mb-6">';
+      html += '<div class="sync-header"><div class="section-title" style="margin-bottom:0">Finnhub API Key</div>';
+      html += finnhubApiKey.trim() ? '<span class="pill pill-on">Connected</span>' : '<span class="pill pill-off">Not Set</span>';
+      html += '<button class="btn-ghost" id="btnHideFinnhub" style="margin-left:auto">Close</button>';
+      html += '</div>';
+      html += '<div class="sync-desc">Optional — add a free Finnhub.io API key for faster, more reliable live stock quotes and earnings dates. Without it, prices come from Stooq (daily close) and earnings dates from Yahoo Finance.</div>';
+      if (finnhubKeyEditing) {
+        html += '<div class="sync-input-row"><input type="text" class="field" id="finnhubKeyInput" placeholder="Paste your Finnhub API key" value="' + esc(finnhubApiKey) + '" /></div>';
+        html += '<div class="sync-actions"><button class="btn-gold" id="btnSaveFinnhubKey">' + icon('cloudUp', 14, '#081410') + ' Save Key</button></div>';
+      } else {
+        html += '<div class="sync-actions"><button class="btn-ghost" id="btnEditFinnhubKey">Edit Key</button></div>';
+      }
+      html += '</div>';
+    }
+
+    // Cloud sync (moved to the bottom of the page)
+    var connected = connectedGlobal;
+    if (!showCloudSync) {
+      html += '<button class="btn-ghost" id="btnShowCloudSync" style="width:100%">' + icon('cloudUp', 14, '#4ADE80') + ' Cloud Sync (Google Sheets)' + (connected ? ' (Connected)' : '') + '</button>';
+    } else {
+      html += '<div class="card mb-6">';
+      html += '<div class="sync-header"><div class="section-title" style="margin-bottom:0">Cloud Sync (Google Sheets)</div>';
+      html += connected ? '<span class="pill pill-on">Connected</span>' : '<span class="pill pill-off">Not Set</span>';
+      html += '<button class="btn-ghost" id="btnHideCloudSync" style="margin-left:auto">Close</button>';
+      html += '</div>';
+      html += '<div class="sync-desc">Sync your investment and profit data to your own Google Sheet for cross-device access — same method as the Project Allocation Ledger.</div>';
+      if (syncUrlEditing) {
+        html += '<div class="sync-input-row"><input type="text" class="field" id="syncUrlInput" placeholder="Paste the Apps Script web app URL (.../exec)" value="' + esc(syncUrl) + '" /></div>';
+        html += '<div class="sync-actions"><button class="btn-gold" id="btnSaveSyncUrl">' + icon('cloudUp', 14, '#081410') + ' Save URL</button></div>';
+      } else {
+        html += '<div class="sync-actions">';
+        html += '<button class="btn-gold" id="btnPush" ' + (syncing ? 'disabled' : '') + '>' + icon('cloudUp', 14, '#081410') + ' Sync to Cloud</button>';
+        html += '<button class="btn-ghost-gold" id="btnPull" ' + (syncing ? 'disabled' : '') + '>' + icon('cloudDown', 14, '#E8C468') + ' Restore from Cloud</button>';
+        html += '<button class="btn-ghost" id="btnEditSyncUrl">Edit URL</button>';
+        html += '</div>';
+      }
+      if (msg.syncStatus) html += '<div class="ok-text">' + esc(msg.syncStatus) + '</div>';
+      if (msg.syncError) html += '<div class="error-text">' + esc(msg.syncError) + '</div>';
+      html += '</div>';
+    }
+
+    if (msg.error) html += '<div class="error-text" style="margin-top:16px">' + esc(msg.error) + '</div>';
+    if (!loaded) html += '<div class="empty-note" style="margin-top:16px">Loading...</div>';
+
+    var galleryEl = document.querySelector('.card-gallery-row');
+    var galleryScrollLeft = galleryEl ? galleryEl.scrollLeft : 0;
+    var focusInfo = captureFocus(app);
+
+    app.innerHTML = '<div>' + html + '</div>';
+    var chartFrameSlot = document.getElementById('chartFrameSlot');
+    if (chartFrameSlot) chartFrameSlot.appendChild(getChartContainerEl());
+    var newGalleryEl = document.querySelector('.card-gallery-row');
+    if (newGalleryEl && galleryScrollLeft) newGalleryEl.scrollLeft = galleryScrollLeft;
+    attachHandlers();
+    restoreFocus(focusInfo);
+    renderChart();
+  }
+
+  // render() rebuilds the whole page, including on the 5-minute price auto-refresh. Without this, the
+  // cursor is yanked out of whatever field the user is typing in whenever a refresh lands.
+  var FOCUS_ATTRS = ['data-profit-name', 'data-profit-amount', 'data-account-ratio-input', 'data-edit-pick-image'];
+
+  function captureFocus(app) {
+    var ae = document.activeElement;
+    if (!ae || !app.contains(ae)) return null;
+    if (ae.tagName !== 'INPUT' && ae.tagName !== 'SELECT' && ae.tagName !== 'TEXTAREA') return null;
+    var selector = null;
+    if (ae.id) {
+      selector = '[id="' + ae.id.replace(/["\\]/g, '\\$&') + '"]';
+    } else {
+      for (var i = 0; i < FOCUS_ATTRS.length; i++) {
+        if (ae.hasAttribute(FOCUS_ATTRS[i])) {
+          selector = '[' + FOCUS_ATTRS[i] + '="' + ae.getAttribute(FOCUS_ATTRS[i]).replace(/["\\]/g, '\\$&') + '"]';
+          break;
+        }
+      }
+    }
+    if (!selector) return null;
+    var info = { selector: selector, start: null, end: null };
+    try { info.start = ae.selectionStart; info.end = ae.selectionEnd; } catch (e) { /* date/number inputs have no selection */ }
+    return info;
+  }
+
+  function restoreFocus(info) {
+    if (!info) return;
+    var el = document.querySelector(info.selector);
+    if (!el) return;
+    el.focus();
+    if (info.start != null) {
+      try { el.setSelectionRange(info.start, info.end); } catch (e) { /* not supported for this input type */ }
+    }
+  }
+
+  // ---------- Event wiring ----------
+  function attachHandlers() {
+    var byId = function (id) { return document.getElementById(id); };
+
+    document.querySelectorAll('[data-profit-page-prev]').forEach(function (btn) {
+      btn.onclick = function () {
+        var invId = btn.getAttribute('data-profit-page-prev');
+        profitPage[invId] = Math.max(1, (profitPage[invId] || 1) - 1);
+        render();
+      };
+    });
+    document.querySelectorAll('[data-profit-page-next]').forEach(function (btn) {
+      btn.onclick = function () {
+        var invId = btn.getAttribute('data-profit-page-next');
+        profitPage[invId] = (profitPage[invId] || 1) + 1;
+        render();
+      };
+    });
+
+    var scaleToggleBtn = byId('btnScaleToggle');
+    if (scaleToggleBtn) scaleToggleBtn.onclick = toggleChartScale;
+
+    var updateAllBtn = byId('btnUpdateAll');
+    if (updateAllBtn) updateAllBtn.onclick = updateAllPrices;
+
+    var showAddFormBtn = byId('btnShowAddForm');
+    if (showAddFormBtn) showAddFormBtn.onclick = function () { showAddForm = true; render(); };
+    var hideAddFormBtn = byId('btnHideAddForm');
+    if (hideAddFormBtn) hideAddFormBtn.onclick = function () { showAddForm = false; render(); };
+
+    var showFinnhubBtn = byId('btnShowFinnhub');
+    if (showFinnhubBtn) showFinnhubBtn.onclick = function () { showFinnhubSection = true; render(); };
+    var hideFinnhubBtn = byId('btnHideFinnhub');
+    if (hideFinnhubBtn) hideFinnhubBtn.onclick = function () { showFinnhubSection = false; render(); };
+
+    var showCloudSyncBtn = byId('btnShowCloudSync');
+    if (showCloudSyncBtn) showCloudSyncBtn.onclick = function () { showCloudSync = true; render(); };
+    var hideCloudSyncBtn = byId('btnHideCloudSync');
+    if (hideCloudSyncBtn) hideCloudSyncBtn.onclick = function () { showCloudSync = false; render(); };
+
+    var showCustomSectionBtn = byId('btnShowCustomSection');
+    if (showCustomSectionBtn) showCustomSectionBtn.onclick = function () { showCustomSection = true; render(); };
+    var hideCustomSectionBtn = byId('btnHideCustomSection');
+    if (hideCustomSectionBtn) hideCustomSectionBtn.onclick = function () { showCustomSection = false; render(); };
+
+    var showMarginSectionBtn = byId('btnShowMarginSection');
+    if (showMarginSectionBtn) showMarginSectionBtn.onclick = function () { showMarginSection = true; render(); };
+    var hideMarginSectionBtn = byId('btnHideMarginSection');
+    if (hideMarginSectionBtn) hideMarginSectionBtn.onclick = function () { showMarginSection = false; render(); };
+    document.querySelectorAll('[data-account-ratio-input]').forEach(function (inp) {
+      var acctId = inp.getAttribute('data-account-ratio-input');
+      inp.oninput = function (e) { ratioDrafts[acctId] = e.target.value; };
+      inp.onchange = function (e) {
+        var val = parseMoney(e.target.value);
+        delete ratioDrafts[acctId];
+        if (!isNaN(val)) setMarginAccountRatio(acctId, val);
+        else render();
+      };
+    });
+    document.querySelectorAll('[data-edit-account]').forEach(function (btn) {
+      btn.onclick = function () { startEditMarginAccount(btn.getAttribute('data-edit-account')); };
+    });
+    document.querySelectorAll('[data-remove-account]').forEach(function (btn) {
+      btn.onclick = function () { removeMarginAccount(btn.getAttribute('data-remove-account')); };
+    });
+    document.querySelectorAll('[data-save-account]').forEach(function (btn) {
+      btn.onclick = function () { saveEditMarginAccount(btn.getAttribute('data-save-account')); };
+    });
+    document.querySelectorAll('[data-cancel-account]').forEach(function (btn) {
+      btn.onclick = cancelEditMarginAccount;
+    });
+    var editAcctName = byId('editAcctName');
+    if (editAcctName) editAcctName.oninput = function (e) { editAccountDraft.name = e.target.value; };
+    var editAcctPrincipal = byId('editAcctPrincipal');
+    if (editAcctPrincipal) editAcctPrincipal.oninput = function (e) { editAccountDraft.principal = e.target.value; };
+    var newAcctName = byId('newAcctName');
+    if (newAcctName) newAcctName.oninput = function (e) { newAccountDraft.name = e.target.value; };
+    var newAcctPrincipal = byId('newAcctPrincipal');
+    if (newAcctPrincipal) newAcctPrincipal.oninput = function (e) { newAccountDraft.principal = e.target.value; };
+    var addAccountBtn = byId('btnAddAccount');
+    if (addAccountBtn) addAccountBtn.onclick = addMarginAccount;
+
+    var customPrincipalInput = byId('customPrincipalInput');
+    if (customPrincipalInput) customPrincipalInput.oninput = function (e) { customTotalPrincipal = e.target.value; };
+    var saveCustomPrincipalBtn = byId('btnSaveCustomPrincipal');
+    if (saveCustomPrincipalBtn) saveCustomPrincipalBtn.onclick = saveCustomTotalPrincipal;
+    var editCustomPrincipalBtn = byId('btnEditCustomPrincipal');
+    if (editCustomPrincipalBtn) editCustomPrincipalBtn.onclick = editCustomTotalPrincipal;
+
+    var cashFlowName = byId('cashFlowName');
+    if (cashFlowName) cashFlowName.oninput = function (e) { cashFlowDraft.name = e.target.value; };
+    var cashFlowAmount = byId('cashFlowAmount');
+    if (cashFlowAmount) cashFlowAmount.oninput = function (e) { cashFlowDraft.amount = e.target.value; };
+    var cashFlowDate = byId('cashFlowDate');
+    if (cashFlowDate) cashFlowDate.oninput = function (e) { cashFlowDraft.date = e.target.value; };
+    var cashFlowKind = byId('cashFlowKind');
+    if (cashFlowKind) cashFlowKind.onchange = function (e) { cashFlowDraft.kind = e.target.value; render(); };
+    var addCashFlowBtn = byId('btnAddCashFlow');
+    if (addCashFlowBtn) addCashFlowBtn.onclick = addCashFlow;
+    var toggleCashFlowListBtn = byId('btnToggleCashFlowList');
+    if (toggleCashFlowListBtn) toggleCashFlowListBtn.onclick = function () { showCashFlowList = !showCashFlowList; render(); };
+    document.querySelectorAll('[data-remove-cashflow]').forEach(function (btn) {
+      btn.onclick = function () { removeCashFlow(btn.getAttribute('data-remove-cashflow')); };
+    });
+    document.querySelectorAll('[data-edit-cashflow]').forEach(function (btn) {
+      btn.onclick = function () { startEditCashFlow(btn.getAttribute('data-edit-cashflow')); };
+    });
+    document.querySelectorAll('[data-save-cashflow]').forEach(function (btn) {
+      btn.onclick = function () { saveEditCashFlow(btn.getAttribute('data-save-cashflow')); };
+    });
+    document.querySelectorAll('[data-cancel-cashflow]').forEach(function (btn) {
+      btn.onclick = cancelEditCashFlow;
+    });
+    var editCfName = byId('editCfName');
+    if (editCfName) editCfName.oninput = function (e) { editCashFlowDraft.name = e.target.value; };
+    var editCfAmount = byId('editCfAmount');
+    if (editCfAmount) editCfAmount.oninput = function (e) { editCashFlowDraft.amount = e.target.value; };
+    var editCfKind = byId('editCfKind');
+    if (editCfKind) editCfKind.onchange = function (e) { editCashFlowDraft.kind = e.target.value; render(); };
+    var editCfDate = byId('editCfDate');
+    if (editCfDate) editCfDate.oninput = function (e) { editCashFlowDraft.date = e.target.value; };
+
+    var showBankTransfersBtn = byId('btnShowBankTransfers');
+    if (showBankTransfersBtn) showBankTransfersBtn.onclick = function () { showBankTransfers = true; render(); };
+    var hideBankTransfersBtn = byId('btnHideBankTransfers');
+    if (hideBankTransfersBtn) hideBankTransfersBtn.onclick = function () { showBankTransfers = false; msg.bankError = ''; render(); };
+    var bindBt = function (id, draft, key) {
+      var el = byId(id);
+      if (el) el.oninput = function (e) { draft[key] = e.target.value; };
+    };
+    bindBt('btDate', bankTransferDraft, 'date');
+    bindBt('btInvestor', bankTransferDraft, 'investor');
+    bindBt('btAmount', bankTransferDraft, 'amount');
+    bindBt('btFee', bankTransferDraft, 'fee');
+    bindBt('btNote', bankTransferDraft, 'note');
+    bindBt('editBtDate', editBankTransferDraft, 'date');
+    bindBt('editBtInvestor', editBankTransferDraft, 'investor');
+    bindBt('editBtAmount', editBankTransferDraft, 'amount');
+    bindBt('editBtFee', editBankTransferDraft, 'fee');
+    bindBt('editBtNote', editBankTransferDraft, 'note');
+    var addBankTransferBtn = byId('btnAddBankTransfer');
+    if (addBankTransferBtn) addBankTransferBtn.onclick = addBankTransfer;
+    var toggleBankTransferListBtn = byId('btnToggleBankTransferList');
+    if (toggleBankTransferListBtn) toggleBankTransferListBtn.onclick = function () { showBankTransferList = !showBankTransferList; render(); };
+    document.querySelectorAll('[data-edit-bt]').forEach(function (btn) {
+      btn.onclick = function () { startEditBankTransfer(btn.getAttribute('data-edit-bt')); };
+    });
+    document.querySelectorAll('[data-save-bt]').forEach(function (btn) {
+      btn.onclick = function () { saveEditBankTransfer(btn.getAttribute('data-save-bt')); };
+    });
+    document.querySelectorAll('[data-cancel-bt]').forEach(function (btn) {
+      btn.onclick = cancelEditBankTransfer;
+    });
+    document.querySelectorAll('[data-remove-bt]').forEach(function (btn) {
+      btn.onclick = function () {
+        if (confirm('Delete this bank transfer record? This cannot be undone.')) removeBankTransfer(btn.getAttribute('data-remove-bt'));
+      };
+    });
+
+    var showLocalBackupBtn = byId('btnShowLocalBackup');
+    if (showLocalBackupBtn) showLocalBackupBtn.onclick = function () { showLocalBackup = true; render(); };
+    var hideLocalBackupBtn = byId('btnHideLocalBackup');
+    if (hideLocalBackupBtn) hideLocalBackupBtn.onclick = function () { showLocalBackup = false; render(); };
+
+    var exportBtn = byId('btnExport');
+    if (exportBtn) exportBtn.onclick = exportBackup;
+
+    var importBtn = byId('btnImport');
+    if (importBtn) importBtn.onclick = function () { document.getElementById('importFileInput').click(); };
+
+    document.querySelectorAll('[data-toggle-card-details]').forEach(function (wrap) {
+      wrap.onclick = function (e) {
+        if (e.target.closest && e.target.closest('button')) return; // let upload/remove buttons handle their own click
+        var invId = wrap.getAttribute('data-toggle-card-details');
+        var wasSelected = selectedCardId === invId;
+        selectedCardId = wasSelected ? null : invId;
+        render();
+        if (!wasSelected) {
+          scrollToCardDetailsPanel();
+          centerSelectedCard(invId);
+        }
+      };
+    });
+    document.querySelectorAll('[data-upload-image]').forEach(function (btn) {
+      btn.onclick = function () {
+        customImageTargetId = btn.getAttribute('data-upload-image');
+        document.getElementById('customImageFileInput').click();
+      };
+    });
+    document.querySelectorAll('[data-remove-image]').forEach(function (btn) {
+      btn.onclick = function () {
+        var targetId = btn.getAttribute('data-remove-image');
+        if (targetId === '__newitem__') { newInvDraft.customImage = ''; render(); }
+        else removeCustomImage(targetId);
+      };
+    });
+    var pickImageSelect = byId('pickImageSelect');
+    if (pickImageSelect) {
+      pickImageSelect.onchange = function (e) {
+        newInvDraft.customImage = e.target.value;
+        render();
+      };
+    }
+    document.querySelectorAll('[data-edit-pick-image]').forEach(function (sel) {
+      sel.onchange = function (e) {
+        var invId = sel.getAttribute('data-edit-pick-image');
+        if (e.target.value) setCustomImage(invId, e.target.value);
+      };
+    });
+    var customImageFileInput = byId('customImageFileInput');
+    if (customImageFileInput) {
+      customImageFileInput.onchange = function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file || !customImageTargetId) return;
+        if (file.size > 8000000) {
+          alert('Image is too large. Please choose an image under ~8MB.');
+          customImageFileInput.value = '';
+          return;
+        }
+        var targetId = customImageTargetId;
+        resizeImageTo300(file).then(function (dataUrl) {
+          if (targetId === '__newitem__') {
+            uploadImageForNewItem(file, dataUrl);
+          } else if (syncUrl.trim()) {
+            uploadImageToCloud(targetId, file, dataUrl);
+          } else {
+            recordImageName(dataUrl, file.name);
+            setCustomImage(targetId, dataUrl);
+          }
+          customImageTargetId = null;
+          customImageFileInput.value = '';
+        }).catch(function () {
+          alert('Could not process that image, please try a different file.');
+          customImageTargetId = null;
+          customImageFileInput.value = '';
+        });
+      };
+    }
+
+    var syncUrlInput = byId('syncUrlInput');
+    if (syncUrlInput) syncUrlInput.oninput = function (e) { syncUrl = e.target.value; };
+
+    var saveSyncBtn = byId('btnSaveSyncUrl');
+    if (saveSyncBtn) saveSyncBtn.onclick = saveSyncUrl;
+
+    var editSyncBtn = byId('btnEditSyncUrl');
+    if (editSyncBtn) editSyncBtn.onclick = editSyncUrl;
+
+    var finnhubKeyInput = byId('finnhubKeyInput');
+    if (finnhubKeyInput) finnhubKeyInput.oninput = function (e) { finnhubApiKey = e.target.value; };
+
+    var saveFinnhubBtn = byId('btnSaveFinnhubKey');
+    if (saveFinnhubBtn) saveFinnhubBtn.onclick = saveFinnhubKey;
+
+    var editFinnhubBtn = byId('btnEditFinnhubKey');
+    if (editFinnhubBtn) editFinnhubBtn.onclick = editFinnhubKey;
+
+    var pushBtn = byId('btnPush');
+    if (pushBtn) pushBtn.onclick = pushToCloud;
+
+    var pullBtn = byId('btnPull');
+    if (pullBtn) pullBtn.onclick = pullFromCloud;
+
+    document.querySelectorAll('.type-toggle button').forEach(function (btn) {
+      if (btn.hasAttribute('data-type')) {
+        btn.onclick = function () { newInvDraft.type = btn.getAttribute('data-type'); render(); };
+      } else if (btn.hasAttribute('data-edit-type')) {
+        btn.onclick = function () { editDraft.type = btn.getAttribute('data-edit-type'); render(); };
+      }
+    });
+
+    var invName = byId('invName');
+    if (invName) invName.oninput = function (e) { newInvDraft.name = e.target.value; };
+    var invPrincipal = byId('invPrincipal');
+    if (invPrincipal) invPrincipal.oninput = function (e) { newInvDraft.principal = e.target.value; };
+    var invCurrent = byId('invCurrent');
+    if (invCurrent) invCurrent.oninput = function (e) { newInvDraft.current = e.target.value; };
+    var invShares = byId('invShares');
+    if (invShares) invShares.oninput = function (e) { newInvDraft.shares = e.target.value; };
+    var invBuyPrice = byId('invBuyPrice');
+    if (invBuyPrice) invBuyPrice.oninput = function (e) { newInvDraft.buyPrice = e.target.value; };
+    var invPrice = byId('invPrice');
+    if (invPrice) invPrice.oninput = function (e) { newInvDraft.price = e.target.value; };
+    var invStartDate = byId('invStartDate');
+    if (invStartDate) invStartDate.oninput = function (e) { newInvDraft.startDate = e.target.value; };
+    var invAssetType = byId('invAssetType');
+    if (invAssetType) invAssetType.onchange = function (e) { newInvDraft.assetType = e.target.value; };
+    var invOptionDays = byId('invOptionDays');
+    if (invOptionDays) invOptionDays.onchange = function (e) { newInvDraft.optionDays = e.target.value; };
+    var invEarningsDate = byId('invEarningsDate');
+    if (invEarningsDate) invEarningsDate.oninput = function (e) { newInvDraft.earningsDate = e.target.value; };
+    var fetchEarningsBtn = byId('btnFetchEarnings');
+    if (fetchEarningsBtn) fetchEarningsBtn.onclick = handleFetchEarnings;
+
+    var fetchPriceBtn = byId('btnFetchPrice');
+    if (fetchPriceBtn) fetchPriceBtn.onclick = handleFetchPrice;
+
+    var addInvBtn = byId('btnAddInv');
+    if (addInvBtn) addInvBtn.onclick = addInvestment;
+
+    var editName = byId('editName');
+    if (editName) editName.oninput = function (e) { editDraft.name = e.target.value; };
+    var editPrincipal = byId('editPrincipal');
+    if (editPrincipal) editPrincipal.oninput = function (e) { editDraft.principal = e.target.value; };
+    var editCurrent = byId('editCurrent');
+    if (editCurrent) editCurrent.oninput = function (e) { editDraft.current = e.target.value; };
+    var editShares = byId('editShares');
+    if (editShares) editShares.oninput = function (e) { editDraft.shares = e.target.value; };
+    var editBuyPrice = byId('editBuyPrice');
+    if (editBuyPrice) editBuyPrice.oninput = function (e) { editDraft.buyPrice = e.target.value; };
+    var editPrice = byId('editPrice');
+    if (editPrice) editPrice.oninput = function (e) { editDraft.price = e.target.value; };
+    var editStartDate = byId('editStartDate');
+    if (editStartDate) editStartDate.oninput = function (e) { editDraft.startDate = e.target.value; };
+    var editAssetType = byId('editAssetType');
+    if (editAssetType) editAssetType.onchange = function (e) { editDraft.assetType = e.target.value; };
+    var editOptionDays = byId('editOptionDays');
+    if (editOptionDays) editOptionDays.onchange = function (e) { editDraft.optionDays = e.target.value; };
+    var editEarningsDate = byId('editEarningsDate');
+    if (editEarningsDate) editEarningsDate.oninput = function (e) { editDraft.earningsDate = e.target.value; };
+    var fetchEditEarningsBtn = byId('btnFetchEditEarnings');
+    if (fetchEditEarningsBtn) fetchEditEarningsBtn.onclick = handleFetchEditEarnings;
+
+    document.querySelectorAll('[data-edit-inv]').forEach(function (btn) {
+      btn.onclick = function () { startEditInvestment(btn.getAttribute('data-edit-inv')); };
+    });
+    document.querySelectorAll('[data-save-edit]').forEach(function (btn) {
+      btn.onclick = function () { saveEditInvestment(btn.getAttribute('data-save-edit')); };
+    });
+    document.querySelectorAll('[data-cancel-edit]').forEach(function (btn) {
+      btn.onclick = cancelEditInvestment;
+    });
+
+    document.querySelectorAll('[data-remove-inv]').forEach(function (btn) {
+      btn.onclick = function () { archiveInvestment(btn.getAttribute('data-remove-inv')); };
+    });
+    var archiveToggleRow = byId('archiveToggleRow');
+    if (archiveToggleRow) archiveToggleRow.onclick = function () { archivePanelOpen = !archivePanelOpen; render(); };
+    document.querySelectorAll('[data-view-archived]').forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute('data-view-archived');
+        archiveViewExpanded[id] = !archiveViewExpanded[id];
+        render();
+      };
+    });
+    document.querySelectorAll('[data-restore-inv]').forEach(function (btn) {
+      btn.onclick = function () { restoreInvestment(btn.getAttribute('data-restore-inv')); };
+    });
+    document.querySelectorAll('[data-delete-inv-perm]').forEach(function (btn) {
+      btn.onclick = function () {
+        if (confirm('Permanently delete this item? This cannot be undone.')) {
+          deleteInvestmentPermanently(btn.getAttribute('data-delete-inv-perm'));
+        }
+      };
+    });
+    document.querySelectorAll('[data-refresh]').forEach(function (btn) {
+      btn.onclick = function () { refreshInvestmentPrice(btn.getAttribute('data-refresh')); };
+    });
+    document.querySelectorAll('[data-toggle]').forEach(function (btn) {
+      btn.onclick = function () { toggleExpanded(btn.getAttribute('data-toggle')); };
+    });
+    document.querySelectorAll('[data-remove-profit]').forEach(function (btn) {
+      btn.onclick = function () { removeProfit(btn.getAttribute('data-remove-profit')); };
+    });
+    document.querySelectorAll('[data-edit-profit]').forEach(function (btn) {
+      btn.onclick = function () { startEditProfit(btn.getAttribute('data-edit-profit')); };
+    });
+    document.querySelectorAll('[data-save-edit-profit]').forEach(function (btn) {
+      btn.onclick = function () { saveEditProfit(btn.getAttribute('data-save-edit-profit')); };
+    });
+    document.querySelectorAll('[data-cancel-edit-profit]').forEach(function (btn) {
+      btn.onclick = cancelEditProfit;
+    });
+    var editProfitName = byId('editProfitName');
+    if (editProfitName) editProfitName.oninput = function (e) { editProfitDraft.name = e.target.value; };
+    var editProfitAmount = byId('editProfitAmount');
+    if (editProfitAmount) editProfitAmount.oninput = function (e) { editProfitDraft.amount = e.target.value; };
+    document.querySelectorAll('[data-add-profit]').forEach(function (btn) {
+      btn.onclick = function () { addProfit(btn.getAttribute('data-add-profit')); };
+    });
+    document.querySelectorAll('[data-profit-name]').forEach(function (inp) {
+      inp.oninput = function (e) {
+        var invId = inp.getAttribute('data-profit-name');
+        var d = getDraft(invId);
+        profitDrafts[invId] = { name: e.target.value, amount: d.amount };
+      };
+    });
+    document.querySelectorAll('[data-profit-amount]').forEach(function (inp) {
+      inp.oninput = function (e) {
+        var invId = inp.getAttribute('data-profit-amount');
+        var d = getDraft(invId);
+        profitDrafts[invId] = { name: d.name, amount: e.target.value };
+      };
+    });
+
+    var importFileInput = document.getElementById('importFileInput');
+    importFileInput.onchange = function (e) {
+      var file = e.target.files && e.target.files[0];
+      handleImportFile(file);
+      e.target.value = '';
+    };
+  }
+
+  loadAll();
+})();
+</script>
+</body>
+</html>
