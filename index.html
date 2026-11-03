@@ -7,7 +7,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Investment Stats · Y. Capital</title>
-<!-- Version 1.6.0 (2026-10-27) — see the changelog next to APP_VERSION in the script -->
+<!-- Version 1.7.0 (2026-11-03) — see the changelog next to APP_VERSION in the script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
@@ -725,6 +725,15 @@
     return negative ? -n : n;
   }
 
+  // Shares may be fractional (e.g. 0.60202): show up to 8 decimals, no trailing zeros, no float noise.
+  function fmtShares(n) {
+    var x = Number(n);
+    if (!isFinite(x)) return String(n == null ? '' : n);
+    var t = x.toFixed(8).replace(/\.?0+$/, '');
+    var parts = t.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+  }
   function fmt(n) {
     var sign = n < 0 ? '-' : '';
     var abs = Math.abs(n);
@@ -937,7 +946,7 @@
     html += '</div>';
     html += '<div style="display:flex;flex-direction:column;gap:5px;font-family:Consolas,Menlo,monospace;font-size:12px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08)">';
     if (inv.type === 'stock') {
-      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">SHARES</span><span style="font-weight:700;color:#38BDF8">' + esc(inv.shares) + '</span></div>';
+      html += '<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">SHARES</span><span style="font-weight:700;color:#38BDF8">' + esc(fmtShares(inv.shares)) + '</span></div>';
       if (inv.earningsDate) {
         var invDaysUntilEarnings = Math.floor((new Date(inv.earningsDate + 'T00:00:00') - new Date(todayStr() + 'T00:00:00')) / 86400000);
         var invEarningsColor = invDaysUntilEarnings <= 30 ? '#EF4444' : (invDaysUntilEarnings <= 60 ? '#FBBF24' : '#22C55E');
@@ -979,6 +988,7 @@
   var LS_PREFIX = 'investmentStats_';
 
   // ---- Version: bump on EVERY update and add a line to the changelog ----
+  // 1.7.0  2026-11-03  Shares: fractional values (e.g. 0.60202) shown cleanly (up to 8 decimals); invalid edit now shows a message.
   // 1.6.0  2026-10-27  Header: new Update button (same as Restore from Cloud).
   // 1.5.0  2026-10-22  Auto-update: on every load the page checks for a newer version (cache-bypassing) and reloads it, or shows an Update bar; no-cache meta tags.
   // 1.4.0  2026-10-22  Preset Cloud Sync URL and Finnhub API key (shown as Connected on a new device).
@@ -990,8 +1000,8 @@
   //                    section reorder, Y. Capital branding, passcode lock.
   var PRESET_SYNC_URL = 'https://script.google.com/macros/s/AKfycbxOu7QI4LUX2RylXgjfv9AXEfnCDBCE3C4kCpolSoPKIFYqshLICQJaymSHvB9il1s6mQ/exec';
   var PRESET_FINNHUB_KEY = 'd86ajvpr01qnvdeho590d86ajvpr01qnvdeho59g';
-  var APP_VERSION = '1.6.0';
-  var APP_VERSION_DATE = '2026-10-27';
+  var APP_VERSION = '1.7.0';
+  var APP_VERSION_DATE = '2026-11-03';
 
   function loadAll() {
     try {
@@ -1373,6 +1383,7 @@
   }
 
   function startEditInvestment(id) {
+    msg.editError = '';
     var inv = investments.find(function (i) { return i.id === id; });
     if (!inv) return;
     editingInvId = id;
@@ -1402,6 +1413,7 @@
   }
 
   function saveEditInvestment(id) {
+    msg.editError = '';
     if (!editDraft.name || !editDraft.name.trim()) return;
     var updated;
     var uniqueEditName = uniqueItemName(editDraft.name.trim(), id);
@@ -1410,7 +1422,7 @@
       var shares = parseMoney(editDraft.shares);
       var buyPrice = parseMoney(editDraft.buyPrice);
       var price = parseMoney(editDraft.price);
-      if (isNaN(shares) || isNaN(buyPrice) || isNaN(price)) return;
+      if (isNaN(shares) || isNaN(buyPrice) || isNaN(price)) { msg.editError = 'Shares, Buy Price and Current Price must be numbers (decimals like 0.60202 are fine).'; render(); return; }
       updated = {
         id: id, type: 'stock', name: uniqueEditName,
         shares: shares, buyPrice: buyPrice, principal: shares * buyPrice,
@@ -2637,6 +2649,7 @@
           var editAssetTypeSelect = '<select class="field" id="editAssetType"><option value="">&mdash; Not set &mdash;</option><option value="Solid"' + (editDraft.assetType === 'Solid' ? ' selected' : '') + '>Solid</option><option value="Liquid"' + (editDraft.assetType === 'Liquid' ? ' selected' : '') + '>Liquid</option></select>';
           detailsHtml += fieldGroup('Call Asset Type', editAssetTypeSelect, 'span-3-1');
           detailsHtml += '</div>';
+          if (msg.editError) detailsHtml += '<div class="hint" style="color:#F87171">' + esc(msg.editError) + '</div>';
           if (editDraft.type === 'stock' && editDraft.shares && editDraft.buyPrice && !isNaN(parseMoney(editDraft.shares)) && !isNaN(parseMoney(editDraft.buyPrice))) {
             detailsHtml += '<div class="hint">Principal = ' + esc(editDraft.shares) + ' shares &times; $' + esc(editDraft.buyPrice) + ' = ' + fmt(parseMoney(editDraft.shares) * parseMoney(editDraft.buyPrice)) + '</div>';
           }
@@ -2689,7 +2702,7 @@
           hudLabels.push('Current Price');
           hudValues.push('<span class="val" style="color:var(--text)">' + fmt(inv.price) + '</span>');
           hudLabels.push('Shares');
-          hudValues.push('<span class="val" style="color:var(--text)">' + esc(inv.shares) + '</span>');
+          hudValues.push('<span class="val" style="color:var(--text)">' + esc(fmtShares(inv.shares)) + '</span>');
           if (inv.optionDays) {
             hudLabels.push('Option Days');
             hudValues.push('<span class="val" style="color:var(--text)">' + esc(inv.optionDays) + '</span>');
@@ -2988,7 +3001,7 @@
             html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Acc. Profit</span></div><div class="inv-hud-val"><span class="val" style="color:#D4A017;font-size:14px">' + fmt(invItemProfitSum) + '</span></div></div>';
             html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Total P/L</span></div><div class="inv-hud-val"><span class="val" style="color:' + (invItemTotalPL >= 0 ? '#4ADE80' : '#F87171') + ';font-size:14px">' + fmt(invItemTotalPL) + '</span></div></div>';
             if (inv.type === 'stock') {
-              html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Shares</span></div><div class="inv-hud-val"><span class="val" style="color:#38BDF8;font-size:14px">' + esc(inv.shares) + '</span></div></div>';
+              html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Shares</span></div><div class="inv-hud-val"><span class="val" style="color:#38BDF8;font-size:14px">' + esc(fmtShares(inv.shares)) + '</span></div></div>';
               html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Buy Price</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text);font-size:14px">$' + esc(inv.buyPrice) + '</span></div></div>';
               if (inv.optionDays) html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Option Days</span></div><div class="inv-hud-val"><span class="val" style="color:#E8C468;font-size:14px">' + esc(inv.optionDays) + '</span></div></div>';
               if (inv.earningsDate) html += '<div class="inv-hud-cell"><div class="inv-hud-lbl"><span class="lbl">Earnings Date</span></div><div class="inv-hud-val"><span class="val" style="color:var(--text);font-size:14px">' + esc(inv.earningsDate) + '</span></div></div>';
