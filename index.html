@@ -7,7 +7,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Investment Stats · Y. Capital</title>
-<!-- Version 1.8.0 (2026-11-25) — see the changelog next to APP_VERSION in the script -->
+<!-- Version 1.8.1 (2026-11-25) — see the changelog next to APP_VERSION in the script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
@@ -988,6 +988,7 @@
   var LS_PREFIX = 'investmentStats_';
 
   // ---- Version: bump on EVERY update and add a line to the changelog ----
+  // 1.8.1  2026-11-25  Total P/L = Principal P/L + Acc. Profit - Total Fee (Principal P/L = Total Earned Reinvested).
   // 1.8.0  2026-11-25  Summary: 'Total Invested' -> 'Total Earned Reinvested'; % of YTD Return = Total Earned Reinvested / Principal x 12; Principal P/L = Total Earned Reinvested.
   // 1.7.0  2026-11-03  Shares: fractional values (e.g. 0.60202) shown cleanly (up to 8 decimals); invalid edit now shows a message.
   // 1.6.0  2026-10-27  Header: new Update button (same as Restore from Cloud).
@@ -1001,7 +1002,7 @@
   //                    section reorder, Y. Capital branding, passcode lock.
   var PRESET_SYNC_URL = 'https://script.google.com/macros/s/AKfycbxOu7QI4LUX2RylXgjfv9AXEfnCDBCE3C4kCpolSoPKIFYqshLICQJaymSHvB9il1s6mQ/exec';
   var PRESET_FINNHUB_KEY = 'd86ajvpr01qnvdeho590d86ajvpr01qnvdeho59g';
-  var APP_VERSION = '1.8.0';
+  var APP_VERSION = '1.8.1';
   var APP_VERSION_DATE = '2026-11-25';
 
   function loadAll() {
@@ -2536,7 +2537,8 @@
     if (autoRefreshing) html += '<div class="hint"><span class="spin" style="display:inline-flex">' + icon('refresh', 12) + '</span> Auto-updating stock closing prices...</div>';
     html += '</header>';
 
-    var totalPL = diff + totalProfit - bankTransferTotals().fee; // Total P/L is net of bank transfer fees
+    // Total P/L = Principal P/L (= Total Earned Reinvested) + Acc. Profit - Total Fee
+    var totalPL = totalPrincipal() + totalProfit - bankTransferTotals().fee;
 
     // Portfolio summary table
     html += '<div class="card mb-8">';
